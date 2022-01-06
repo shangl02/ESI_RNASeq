@@ -19,10 +19,10 @@ filePath <- args[4]
 setwd(filePath)
 
 
-# expr_mtx_fn <- '/media/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/merge_sub.tsv'
-# condition_fn <- '/media/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/condition.txt'
-# compare_fn <- '/media/home/lis262/Code/Scripts/HPC_Scripts/RNAseq/p01_DEseq2_pairs.tsv'
-# filePath <- '/media/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/DESeq2'
+# expr_mtx_fn <- '/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/merge_sub.tsv'
+# condition_fn <- '/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/condition.txt'
+# compare_fn <- '/home/lis262/Code/Scripts/HPC_Scripts/RNAseq/p01_DEseq2_pairs.tsv'
+# filePath <- '/hpc/grid/wip_drm_targetsciences/users/shangzhong/CTI/ILT3/DESeq2'
 setwd(filePath)
 
 expr_mtx_df = read.table(expr_mtx_fn,row.names=1,header=T)
