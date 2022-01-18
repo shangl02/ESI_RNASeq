@@ -6,6 +6,8 @@ suppressPackageStartupMessages({
   require(edgeR);
 })
 
+
+
 DE.DESeq = function(dds) {
   dds <- DESeq(dds)
   res <- results(dds)
