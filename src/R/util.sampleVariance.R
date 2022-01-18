@@ -4,10 +4,12 @@ suppressPackageStartupMessages({
   require(DESeq2);
   require(glmpca);
   require(sva);
+  require(pheatmap)
+  require(RColorBrewer)
 })
 
-pasteMultiCol = function(vsd, variables, s) {
-  delim = ''
+pasteMultiCol = function(vsd, variable, s) {
+  delim=''
   r=vector("character")
   for (v in variables) {
     r = paste(r, vsd[[v]], sep=delim)
@@ -16,7 +18,7 @@ pasteMultiCol = function(vsd, variables, s) {
   return(r)
 }
 
-plot.vst = function(vsd, rld) {
+plot.vst = function(dds, vsd, rld) {
   df <- bind_rows(
     as_data_frame(log2(counts(dds, normalized=TRUE)[, 1:2]+1)) %>%
       mutate(transformation = "log2(x + 1)"),
@@ -30,16 +32,18 @@ plot.vst = function(vsd, rld) {
     coord_fixed() + facet_grid( . ~ transformation) +ggtitle("Comparison of un-transformed vs vst vs rlog")
 }
 
-## Sample distance using VST
-plot.sampleDist.vst<- function(vsd, variables, s){
+calc.sampleDist.vst <- function(vsd, variables, delim) {
   sampleDists <- dist(t(assay(vsd)))
-  library("pheatmap")
-  library("RColorBrewer")
-  sampleDistsMatrix <- as.matrix(sampleDists)
-  rownames(sampleDistsMatrix) <- pasteMultiCol(vsd, variables, s)
-  colnames(sampleDistsMatrix) <- NULL
+  sampleDistMatrix <- as.matrix(sampleDists)
+  rownames(sampleDistMatrix) <- pasteMultiCol(vsd, variables, delim)
+  colnames(sampleDistMatrix) <- NULL
+  return(list(dist=sampleDists, dist.mat=sampleDistMatrix))
+}
+
+## Sample distance using VST
+plot.sampleDist.vst<- function(sampleDists, sampleDistMatrix){
   colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
-  pheatmap(sampleDistsMatrix,
+  pheatmap(sampleDistMatrix,
            clustering_distance_rows = sampleDists,
            clustering_distance_cols = sampleDists,
            col = colors)
@@ -57,15 +61,16 @@ plot.pca.vst = function(vsd, v) {
     ggtitle("PCA with VST data")
 }
 
-plot.mds.vst = function(vsd, v) {
+plot.mds.vst = function(vsd, v, sampleDistMatrix) {
   mds <- as.data.frame(colData(vsd)) %>%
-      cbind(cmdscale(sampleDistsMatrix))
-    ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])))) +
-      geom_point(size = 3) + coord_fixed() + ggtitle("MDS with VST data")
+    cbind(cmdscale(sampleDistMatrix))
+  ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])))) +
+    geom_point(size = 3) + coord_fixed() + ggtitle("MDS with VST data")
 }
 
+
 plot.glmpca = function(dds, v) {
-## PCA plot using generalized PCA
+  ## PCA plot using generalized PCA
   gpca <- glmpca(counts(dds), L=2)
   gpca.dat <- gpca$factors
   for (variable in v) {
@@ -84,12 +89,11 @@ plot.mds = function(dge, v) {
 }
 
 
-plot.svaseq = function(dge.filter, label_col){
-  cpm_new <- cpm(dge.filter)
-  mod  <- model.matrix(~ Group, dge.filter$samples)
-  mod0 <- model.matrix(~   1, dge.filter$samples)
+plot.svaseq = function(dge, label_col){
+  cpm_new <- cpm(dge)
+  mod  <- model.matrix(~ Group, dge$samples)
+  mod0 <- model.matrix(~   1, dge$samples)
   svseq <- svaseq(cpm_new, mod, mod0)
   data.frame(svseq$sv, dge.filter$samples) %>%
     ggplot(aes(x=X1, y=X2, col=Group, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
 }
-
