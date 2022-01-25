@@ -66,10 +66,13 @@ process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=
 ## Option 1: load Sample counts per file
 cts.mat = read_merge.cts(pattern, metric.vec, patName)
 # set sample names
-dim(cts.mat)
 
 ## Option 2: load count matrix
 cts.mat = read.combined_cts(cts_file)
+
+dim(cts.mat)
+
+
 
 ## Load genome annotation file
 gtf.file <- 'X:\\projects\\Ensembl\\release-98\\gtf\\Mus_musculus.GRCm38.98.chr.gtf'
@@ -86,12 +89,12 @@ sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
 ## Verify
 if (!verify.meta(cts.mat, sample.meta)) {
   print("Ordering columns of count matrix")
-  cts.mat.ordered<-cts.mat[,unlist(sample.meta[1])]
+  cts.mat<-cts.mat[,unlist(sample.meta[1])]
   stopifnot(verify.meta(cts.mat.ordered, sample.meta))
 }
 
 # Generate sample variance report
-process.sampleVariance.all(cts.mat.ordered, sample.meta, variables)
+process.sampleVariance.all(cts.mat, sample.meta, variables)
 
 ## Read comparison file
 compare_df = read.table(comparison.file,header=T, sep="\t")
