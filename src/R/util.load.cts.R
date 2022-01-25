@@ -2,11 +2,14 @@
 ## Count file has metrics for genes per line
 ## Example: Geneid	Chr	Start	End	Strand	Length	Count
 ## v: c(1,7) indicates geneID and count
-load.cts = function(pattern, v) {
+load.cts = function(pattern, v, patName) {
   stopifnot(length(v)==2)
   
   fnames <- Sys.glob(pattern)
+  
   all.counts.list <- lapply(fnames, function(x) read.delim(x, comment.char="#")[, v])
+  all.names <- lapply(fnames, function(x) str_extract_all(x,patName)[[1]][2])
+  return(list(all.counts.list, all.names))
 }
 
 verify.cts = function(cts_list) {
@@ -17,10 +20,12 @@ merge.cts = function(cts_list) {
   all.counts.mat <- do.call("cbind", lapply(cts_list, function(x) x[, 2]))
 }
 
-read_merge.cts = function(pattern, v) {
+read_merge.cts = function(pattern, v, patName) {
   ## load all counts
-  cts.list <- load.cts(pattern, v)
-  
+  l <- load.cts(pattern, v, patName)
+  cts.list <- l[[1]]
+  samples <- l[[2]]
+
   ## verify gene names
   stopifnot(verify.cts(cts.list))
   
@@ -29,6 +34,10 @@ read_merge.cts = function(pattern, v) {
   
   ## set row names (genes)
   rownames(cts.all.mat) <- cts.list[[1]][, 1]
+  
+  ## set column names (samples)
+  colnames(cts.all.mat) = samples
+  
   return(cts.all.mat)
 }
 
