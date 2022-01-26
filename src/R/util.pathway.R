@@ -49,6 +49,7 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
     }, 
     error = function(err) {
       print(paste("Error: ", err))
+      dev.off()
     },
     finally = function(){
       dev.off()
