@@ -210,6 +210,6 @@ analysis.pathway = function(res, species, path, prefix) {
   
   # pathway analysis
   plot_pathway("KEGG", gene_list, species, dbID, path, prefix)
-  plot_pathway("GO", gene_list, species, dbID, path, prefix)
+  # plot_pathway("GO", gene_list, species, dbID, path, prefix)
   
 }
