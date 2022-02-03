@@ -1,8 +1,10 @@
 
 suppressPackageStartupMessages({
-  require(clusterProfiler)
-  require(enrichplot)
+  require(clusterProfiler);
+  require(enrichplot);
   require(ggplot2);
+  require(org.Mm.eg.db);
+  require(org.Hs.eg.db)
 })
 
 plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
@@ -15,18 +17,24 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
     
     p_gse <- gseKEGG(geneList = gene_list, organism = species,
                      nPerm = 10000, minGSSize = 3, maxGSSize = 800, pvalueCutoff = 0.1, verbose = FALSE)
+    # set readable
+    if (species == 'mouse'){
+      p_enrich = setReadable(p_enrich, org.Mm.eg.db, keyType="ENTREZID")
+    }
+    if (species == 'human'){
+      p_enrich = setReadable(p_enrich, org.Hs.eg.db, keyType="ENTREZID")
+    }
   }
   else if (tolower(pathDB) == "go") {
     p_enrich <- enrichGO(gene = names(gene_list), OrgDb = dbID, 
                          readable = T, ont = "BP", pvalueCutoff = 0.05, qvalueCutoff = 0.10)
-    
     p_gse <- gseGO(geneList=gene_list, ont ="ALL", keyType = "ENTREZID", OrgDb = get(dbID),
                    nPerm = 10000, minGSSize = 3, maxGSSize = 800, pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "none")
   }
   
   # write GSE result
   write.table(p_gse@result, file.path(dir, paste0(prefix, ".", pathDB, '.GSE.result.txt')), sep="\t", quote=FALSE, row.names = FALSE)
-  
+  write.table(p_enrich@result, file.path(dir, paste0(prefix, ".", pathDB, '.enrich.result.txt')), sep="\t", quote=FALSE, row.names = FALSE)
   ## Save plots in pdf
   tryCatch(
     {
