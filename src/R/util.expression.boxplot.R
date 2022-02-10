@@ -4,13 +4,13 @@ suppressPackageStartupMessages({
 })
 
 
-expression_boxplot = function(tpm_fn, gene_fn, sample_meta_fn, species, figure){
+expression_boxplot = function(norm_ctx_fn, gene_fn, sample_meta_fn, variables, species, figure){
   genes = read.table(gene_fn)$V1
   sample.meta <- read.csv(sample_meta_fn, sep='\t', header=TRUE, stringsAsFactors = FALSE)
   sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
   samples = sample.meta$Sample
   
-  norm_df = read.csv(norm_ctx_fn,row.names = 1)
+  norm_df = read.table(norm_ctx_fn,row.names = 1,header=T)
   norm_df = norm_df[,samples]
   norm_df = addAnno(norm_df, species)[[1]]
   gene_df = as.data.frame(t(norm_df[norm_df$symbol %in% genes,]))
@@ -33,8 +33,9 @@ expression_boxplot = function(tpm_fn, gene_fn, sample_meta_fn, species, figure){
   colnames(count_df) = c('gene', 'condition', 'tpm')
   count_df$tpm = as.numeric(count_df$tpm)
   
-  png(figure, width = 600, height = 480)
-  ggplot(count_df, aes(x=gene, y=tpm,fill=condition)) + geom_boxplot() + 
-    facet_wrap(~gene, scale="free")
+  png(figure, width = 800, height = 480)
+  p = ggplot(count_df, aes(x=gene, y=tpm,fill=condition)) + geom_boxplot() + 
+        facet_wrap(~gene, scale="free")
+  print(p)
   dev.off()
 }
