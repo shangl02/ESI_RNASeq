@@ -53,3 +53,14 @@ read.combined_cts = function(file) {
   colnames(cts.mat) <- colnames(cts.list)
   return(cts.mat)
 }
+
+
+## Combined Nanostring counts
+read.combined_nano_cts = function(file) {
+  cts.list = read.table(file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+  genes = paste(cts.list$Code.Class, cts.list$Name, cts.list$Accession, sep='_')
+  cts.mat = cts.list[,4:length(cts.list)]
+  rownames(cts.mat) = genes
+  colnames(cts.mat) = colnames(cts.list)[4:length(cts.list)]
+  return(cts.mat)
+}

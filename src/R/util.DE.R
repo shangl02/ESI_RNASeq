@@ -67,7 +67,7 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       ## MA plot
       c <- resultsNames(dds)[2]
       res <- lfcShrink(dds, coef =  c, type="apeglm")
-      plotMA(res, ylim=c(-5,5))
+      DESeq2::plotMA(res, ylim=c(-5,5))
       
       ## topN gene cluster heatmap
       l<-addAnnoByVector(truncateEnsemblID(rownames(rld)), species)
