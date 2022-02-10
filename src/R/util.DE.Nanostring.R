@@ -14,6 +14,13 @@ suppressPackageStartupMessages({
 
 
 DE.DESeq2.NanoString = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, species) {
+  # cts.mat: count matrix loaded using function read.combined_nano_cts
+  # sample.meta: meta data, first column name needs to be "Sample".
+  # compare_df: two columns, first is control, second is test
+  # min_total_count: threshold to filter genes.
+  # outdir: output directory
+  # lfc_cutoff, alpha: log2foldchange and FDR threshold.
+  # species: 'human' or 'mouse', used to annotate genes
   col <- colnames(compare_df)
   row <- nrow(compare_df)
   rownames(sample.meta) = sample.meta$Sample
