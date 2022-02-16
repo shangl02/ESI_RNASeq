@@ -25,17 +25,17 @@ expression_boxplot = function(norm_ctx_fn, gene_fn, sample_meta_fn, variables, s
   gene_df = as.data.frame(t(norm_df[norm_df$symbol %in% genes,]))
   colnames(gene_df) = gene_df['symbol',]
   gene_df$Sample = rownames(gene_df)
-  meta_col = c('Sample','mergeCond','box_plt_order')
+  meta_col = c('Sample','mergeCond','plot_order')
   gene_df = merge(gene_df, sample.meta[,c(meta_col)], by='Sample')
   # in case there's duplicate gene names
   colnames(gene_df) = make.unique(colnames(gene_df))
   genes = setdiff(colnames(gene_df), meta_col)
 
-  count_df = data.frame(matrix(ncol=3, nrow=0))
+  count_df = data.frame(matrix(ncol=4, nrow=0))
   for (g in genes) {
     tryCatch(
       {
-        cts = cbind(g,gene_df$mergeCond, gene_df[,g],gene_df$box_plt_order)
+        cts = cbind(g,gene_df$mergeCond, gene_df[,g],gene_df$plot_order)
         count_df = rbind(count_df, cts)
       },
       error = function(err) {
