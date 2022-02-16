@@ -37,7 +37,7 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       dds$mergeCond <- relevel(dds$mergeCond, ref = ctrl)
       dds <- DESeq(dds)
       res <- results(dds)
-      resOrdered <- res[order(res$padj),]
+      resOrdered <- res[order(res$pvalue),]
       result <- resOrdered[complete.cases(resOrdered),]
       
       # create sub-folder and save results
@@ -75,14 +75,14 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       plot.topNVar.heatmap(rld, 20);
       
       ## Volcano plot
-      p<-plot.enhancedVolcano(res, species, lfc_cutoff, alpha, paste0(test, " vs ", ctrl));
+      p<-plot.enhancedVolcano(result, species, lfc_cutoff, alpha, paste0(test, " vs ", ctrl));
       print(p)
       #plot.volcano(result, lfc_cutoff, alpha, TRUE)
       dev.off()
       
       ## Significant Up and Down
-      sig_up <- result[result$padj < alpha & result$log2FoldChange >= log2(lfc_cutoff),]
-      sig_dn <- result[result$padj < alpha & result$log2FoldChange <= -log2(lfc_cutoff),]
+      sig_up <- result[result$padj < alpha & result$log2FoldChange >= lfc_cutoff,]
+      sig_dn <- result[result$padj < alpha & result$log2FoldChange <= -lfc_cutoff,]
       
       print(paste("upreg",ctrl,test,nrow(sig_up),sep=" "))
       print(paste("dnreg",ctrl,test,nrow(sig_dn),sep=" "))
@@ -267,5 +267,5 @@ analysis.pathway = function(res, species, path, prefix) {
   
   # pathway analysis
   plot_pathway("KEGG", gene_list, species, dbID, path, prefix)
-  plot_pathway("GO", gene_list, species, dbID, path, prefix)
+  # plot_pathway("GO", gene_list, species, dbID, path, prefix)
 }
