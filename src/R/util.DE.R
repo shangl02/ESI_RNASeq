@@ -143,7 +143,7 @@ plot.enhancedVolcano = function(res, species, lfc_cutoff, alpha, title) {
   EnhancedVolcano(res,
                   lab = l$symbol,
                   x = 'log2FoldChange',
-                  y = 'pvalue',
+                  y = 'padj',
                   title = title,
                   pCutoff = alpha,
                   FCcutoff = lfc_cutoff,
