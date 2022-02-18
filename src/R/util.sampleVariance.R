@@ -46,7 +46,7 @@ plot.sampleDist.vst<- function(sampleDists, sampleDistMatrix){
   pheatmap(sampleDistMatrix,
            clustering_distance_rows = sampleDists,
            clustering_distance_cols = sampleDists,
-           col = colors)
+           col = colors, fontsize=8)
 }
 
 plot.pca.vst = function(vsd, v) {
