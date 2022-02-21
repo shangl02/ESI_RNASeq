@@ -1,7 +1,6 @@
 ## Parameter
 ## Count file
-cts_file = "X:\\projects\\p029_SAMHD1\\RNASeq.Mouse.12032021\\AlignmentNCounting\\ORD_Pipeline\\RNASeq_140.mm10.12_07_2021_10_46_07\\RSEM\\RSEM.RAW.table"
-
+cts_file = "X:\\projects\\p041_PMS1\\REDA\\PMS1.allSamples.count.txt"
 
 ## Load counts
 pattern = "X:\\projects\\p041_PMS1\\AlignmentNCounting\\S*\\salmon_aln\\quant.genes.sf"
@@ -28,4 +27,4 @@ outdir <- 'X:\\projects\\p041_PMS1\\Output'
 ## cutoff for DE
 lfc_cutoff=1
 alpha=0.05
-
+topN=100

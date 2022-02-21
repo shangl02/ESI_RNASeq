@@ -8,7 +8,7 @@ source('src/R/util.pathway.R')
 
 
 ## Load parameter◘
-source('src/R/load.param.R')
+#source('src/R/load.param.R')
 
 process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=5, min_total_count=30) {
   design.formula = build.formula(variables)
@@ -73,10 +73,9 @@ cts.mat = read.combined_cts(cts_file)
 dim(cts.mat)
 
 
-
 ## Load genome annotation file
-gtf.file <- 'X:\\projects\\Ensembl\\release-98\\gtf\\Mus_musculus.GRCm38.98.chr.gtf'
-gene_anno = load.gtf(gtf.file)
+#gtf.file <- 'X:\\projects\\Ensembl\\release-98\\gtf\\Mus_musculus.GRCm38.98.chr.gtf'
+#gene_anno = load.gtf(gtf.file)
 
 ## Output directory
 dir.create(outdir)
@@ -85,19 +84,36 @@ setwd(outdir)
 ## Load sample metadata
 sample.meta <- read.csv(sample.meta.file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
 sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
+dim(sample.meta)
 
 ## Verify
 if (!verify.meta(cts.mat, sample.meta)) {
   print("Ordering columns of count matrix")
   cts.mat<-cts.mat[,unlist(sample.meta[1])]
-  stopifnot(verify.meta(cts.mat.ordered, sample.meta))
+  stopifnot(verify.meta(cts.mat, sample.meta))
 }
-
-# Generate sample variance report
-process.sampleVariance.all(cts.mat, sample.meta, variables)
 
 ## Read comparison file
 compare_df = read.table(comparison.file,header=T, sep="\t")
 
+# if (TRUE) {
+#   keywords=c("HO","HE","WT")
+#   for (key in keywords){
+#     ## modify this row accordingly
+#     idx=sample.meta$Treatment==key
+#     
+#     cts.sub=cts.mat[,idx]
+#     sample.meta.sub=sample.meta[idx,]
+#     outdir.sub=file.path(outdir,key)
+#     dir.create(outdir.sub)
+#     setwd(outdir.sub)
+#     process.sampleVariance.all(cts.sub, sample.meta.sub, variables)
+#     DE.DESeq(cts.sub, sample.meta.sub, compare_df, min_total_count, outdir.sub, lfc_cutoff, alpha, topN, species)
+#   }
+# }
+
+# Generate sample variance report
+process.sampleVariance.all(cts.mat, sample.meta, variables)
+
 ## DE analysis
-DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, species)
+DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species)

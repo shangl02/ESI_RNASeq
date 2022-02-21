@@ -12,8 +12,7 @@ suppressPackageStartupMessages({
   require(EnhancedVolcano)
 })
 
-DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, species) {
-  
+DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species) {
   col <- colnames(compare_df)
   row <- nrow(compare_df)
   
@@ -27,7 +26,6 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       # sub expression df
       sub_expr_df = cts.mat[,row.names(sub_cond_df)]
       print(paste0('Process conparison ', ctrl, ' vs ', test))
-      
       
       # 2nd part, do the DE for one compare
       dds <-DESeqDataSetFromMatrix(countData=round(sub_expr_df), colData=sub_cond_df,design=~mergeCond)
@@ -67,7 +65,7 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       ## MA plot
       c <- resultsNames(dds)[2]
       res <- lfcShrink(dds, coef =  c, type="apeglm")
-      plotMA(res, ylim=c(-5,5))
+      DESeq2::plotMA(res, ylim=c(-5,5))
       
       ## topN gene cluster heatmap
       l<-addAnnoByVector(truncateEnsemblID(rownames(rld)), species)
@@ -81,11 +79,19 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       dev.off()
       
       ## Significant Up and Down
-      sig_up <- result[result$padj < alpha & result$log2FoldChange >= log2(lfc_cutoff),]
-      sig_dn <- result[result$padj < alpha & result$log2FoldChange <= -log2(lfc_cutoff),]
-      
+      sig_up <- result[result$padj < alpha & result$log2FoldChange >= lfc_cutoff,]
+      sig_up<-sig_up[order(sig_up$padj),]
+      n<-min(c(length(sig_up[[1]]), topN))
+      sig_up<-sig_up[1:n,]
       print(paste("upreg",ctrl,test,nrow(sig_up),sep=" "))
+      write.csv(sig_up, file.path(path, paste0("UpGene_lfc", lfc_cutoff,"_PValue",alpha,"_top", topN, ".txt")), row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+      
+      sig_dn <- result[result$padj < alpha & result$log2FoldChange <= -lfc_cutoff,]
+      sig_dn<-sig_dn[order(sig_dn$padj),]
+      n<-min(c(length(sig_dn[[1]]), topN))
+      sig_dn<-sig_dn[1:n,]
       print(paste("dnreg",ctrl,test,nrow(sig_dn),sep=" "))
+      write.csv(sig_dn, file.path(path, paste0("DownGene_lfc", lfc_cutoff,"_PValue",alpha, "_top", topN, ".txt")), row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
       
       ## pathway analysis
       path2 <- file.path(path,'Pathway')
@@ -95,9 +101,13 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
     },
     error = function(err) {
       print(paste("Error: ", err))
+      tryCatch({
+        dev.off()
+      }, error = function(err) {
+        print(err);
+      })
     }, 
     finally = function(f) {
-      dev.off()
     })
   }
 }
@@ -234,9 +244,14 @@ loadOrg.pathway = function(species) {
     dbID = 'org.Mm.eg.db'
     library(org.Mm.eg.db)
   }
+  else if (tolower(species) == "rat") {
+    dbID = 'org.Rn.eg.db'
+    library(org.Rn.eg.db)
+  }
   else {
     stop("unsupported species")
   }
+  
   return(dbID)
 }
 
