@@ -35,7 +35,7 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       dds$mergeCond <- relevel(dds$mergeCond, ref = ctrl)
       dds <- DESeq(dds)
       res <- results(dds)
-      resOrdered <- res[order(res$padj),]
+      resOrdered <- res[order(res$pvalue),]
       result <- resOrdered[complete.cases(resOrdered),]
       
       # create sub-folder and save results
@@ -73,7 +73,7 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       plot.topNVar.heatmap(rld, 20);
       
       ## Volcano plot
-      p<-plot.enhancedVolcano(res, species, lfc_cutoff, alpha, paste0(test, " vs ", ctrl));
+      p<-plot.enhancedVolcano(result, species, lfc_cutoff, alpha, paste0(test, " vs ", ctrl));
       print(p)
       #plot.volcano(result, lfc_cutoff, alpha, TRUE)
       dev.off()
@@ -196,17 +196,6 @@ addAnno = function(res, species) {
   res$name <- l$name
   res$ensembl <- l$ensembl
   
-  # if (isEntrezID(ens.str)) {
-  #   res$symbol <- mapIds(get(dbID), keys = ens.str, column = "SYMBOL", keytype = "ENSEMBL", multiVals="first")
-  #   res$entrez <- mapIds(get(dbID), keys = ens.str, column = "ENTREZID", keytype = "ENSEMBL", multiVals="first")
-  #   res$name <- mapIds(get(dbID), keys = ens.str, column= "GENENAME", keytype = "ENSEMBL", multiVals = "first")
-  #   res$ensembl <- mapIds(get(dbID), keys = ens.str, column= "ENSEMBL", keytype = "ENSEMBL", multiVals = "first")
-  # } else {
-  #   res$entrez <- mapIds(get(dbID), keys = ens.str,column = "ENTREZID", keytype = "SYMBOL", multiVals = "first")
-  #   res$symbol <- mapIds(get(dbID), keys = ens.str, column= "SYMBOL", keytype = "SYMBOL", multiVals = "first")
-  #   res$name <- mapIds(get(dbID), keys = ens.str, column= "GENENAME", keytype = "SYMBOL", multiVals = "first")
-  #   res$ensembl <- mapIds(get(dbID), keys = ens.str, column= "ENSEMBL", keytype = "SYMBOL", multiVals = "first")
-  # }
   return(list(res,dbID))
 }
 
