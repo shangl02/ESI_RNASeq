@@ -1,6 +1,6 @@
 ## Parameter
 ## Count file
-cts_file = "/media/C3aR/raw_counts.tsv"
+cts_file = "/media/CD38/raw_count.tsv"
 
 
 ## Load counts
@@ -9,23 +9,24 @@ metric.vec = c(1,5) # gene + count or TMP (depend on the counter)
 patName = 'S\\d+'
 
 ## sample meta file
-sample.meta.file = "/media/C3aR/condition.tsv"
-comparison.file = "/media/C3aR/compare.tsv"
+sample.meta.file = "/media/CD38/condition.tsv"
+comparison.file = "/media/CD38/compare.tsv"
 
 ## Species
-species='human'
+species='mouse'
 
 ## gene filter
 min_count=5
 min_total_count=30
 
 ## variables in sample meta
-variables<-c('condition')  ## Variables in design
+# variables<-c('Cytokine','Nucleotide','Treatment')  ## Variables in design
+variables = c('Strain','Diet')
 
 ## output dir
-outdir <- '/media/C3aR//DESeq2'
+outdir <- '/media/CD38/DESeq2'
 
 ## cutoff for DE
-lfc_cutoff=1
+lfc_cutoff=0.58
 alpha=0.05
 

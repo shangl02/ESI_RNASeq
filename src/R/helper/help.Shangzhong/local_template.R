@@ -8,7 +8,7 @@ source('src/R/util.pathway.R')
 source('src/R/util.pheatmap.R')
 source('src/R/util.expression.boxplot.R')
 ## Load parameter◘
-source('src/R/local_param.R')
+source('src/R/Helper/local_param.R')
 
 process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=5, min_total_count=30) {
   design.formula = build.formula(variables)
@@ -25,10 +25,14 @@ process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=
   
   ## Sample Variance Section
   vsd <- vst(dds, blind = FALSE)
-  rld <- rlog(dds, blind = FALSE)
+  # rld <- rlog(dds, blind = FALSE)
   dds <- estimateSizeFactors(dds) #required for log2 approach which need size factors to account for sequencing depth, and specify normalized=TRUE
   l <- calc.sampleDist.vst(vsd, variables, '_') ## calculate sample distance matrix
-  
+  norm_count = counts(dds,normalized=TRUE)
+  norm_count = data.frame(cbind(geneid=rownames(norm_count),norm_count))
+  anno <- addAnnoByVector(truncateEnsemblID(rownames(norm_count)), species)
+  norm_count$symbol = anno$symbol
+  write.table(norm_count, 'norm_count.tsv',sep='\t',quote=F,row.names=F)
   ## plotting
   tryCatch(
     {
@@ -37,11 +41,13 @@ process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=
       # p1<-plot.mds(dge.filter, variables)
       # p2<-plot.glmpca(dds, variables)
       # p3<-plot.vst(dds,vsd, rld)
-      # p4<-plot.sampleDist.vst(l$dist, l$dist.mat)
+      # test = l$dist.mat
+      # colnames(test) = sample.meta$Sample
+      # p4<-plot.sampleDist.vst(l$dist, test)
       # p5<-plot.mds.vst(vsd, variables, l$dist.mat)
       p6<-plot.pca.vst(vsd, variables)
       # p7<-plot.svaseq(dge.filter, 'Sample')
-      ## plot.topNVar.vst(vsd, 20)
+      # # plot.topNVar.vst(vsd, 20)
       # print(p1)
       # print(p2)
       # print(p3)
@@ -100,21 +106,39 @@ compare_df = read.table(comparison.file,header=T, sep="\t")
 DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, species)
 
 
-#====== pheatmap for subset of genes========
-gene_fn = '/media/C3aR/pheatmap//genes.txt'
-outFig = '/media/C3aR/pheatmap//heatmap.png'
-logTrans = F
-plot.pheatmap(cts_file, sample.meta.file, variables, gene_fn, outFig, logTrans=F)
+#=============================================
+#        pheatmap for subset of genes
+#=============================================
+gene_fn = '/media/EphB2/genes.txt'
+outFig = '/media/EphB2/pheatmap.png'
+norm_cts_fn = '/media/EphB2//DESeq2/norm_count_sub.tsv'
+sample_meta_fn = '/media/EphB2/condition_sub.tsv'
+variables = c('merge')
+logTrans = T
+plot.pheatmap(norm_cts_fn, sample.meta.file, variables, gene_fn, outFig, logTrans)
 
-#==== merge all DESeq results ================
-fn1 = '/media/CD38/DESeq2/WT_CDA-HFD_VS_WT_Regular/WT_CDA-HFD_VS_WT_Regular.result.csv'
-fn2 = '/media/CD38/DESeq2/CD38KO_CDA-HFD_VS_CD38KO_Regular/CD38KO_CDA-HFD_VS_CD38KO_Regular.result.csv'
-fn3 = '/media/CD38/DESeq2/CD38KO_CDA-HFD_VS_WT_CDA-HFD/CD38KO_CDA-HFD_VS_WT_CDA-HFD.result.csv'
-df1 = read.csv(fn1)
-df2 = read.csv(fn2)
-df3 = read.csv(fn3)
+#=============================================
+#        pathway analysis for genes
+#=============================================
+gene_fn = '/media/EphB2/genes.txt'
+genes = read.table(gene_fn)$V1
+res_fn = '/media/EphB2/DESeq2/2A_Cre_EphB2_sg_VS_2B_Cre_SC_sg/2A_Cre_EphB2_sg_VS_2B_Cre_SC_sg.result.csv'
+res = read.csv(res_fn, row.names=1)
+res = res[rownames(res) %in% genes,]
+path = '/media/EphB2/'
+prefix = 'pathway'
+species = 'mouse'
+analysis.pathway(res, species, path, prefix)
+
+
+#=============================================
+#            merge all DESeq results
+#=============================================
+fn_paths = '/media/EphB2/DESeq2/'
+fns  = Sys.glob(file.path(fn_paths,'*','*.result.csv'))
+dfs = lapply(fns, read.csv)
 res =  Reduce(function(dtf1, dtf2) merge(dtf1, dtf2, by = "X", all.x = TRUE),
-              list(df1,df2,df3))
+              dfs)
 write.table(res,'/media/CD38/DESeq2/merge_res.tsv',sep='\t',quote=F)
 df = read.table('/media/CD38/DESeq2/merge_lfc_qval.tsv',header=T)
 sub_df = df[df$symbol %in% genes,]
@@ -122,15 +146,50 @@ sub_df = sub_df[order(sub_df$symbol),]
 write.table(sub_df, '/media/CD38/DESeq2/sub_lfc_qval.tsv',sep='\t', 
             quote=F,row.names=F)
 
-#====== gene expression boxplot =================
-norm_ctx_fn = '/media/IL26/tpm.tsv'
-gene_fn = '/media/IL26/genes.txt'
-sample_meta_fn = '/media/IL26/condition.tsv'
-figure = '/media/IL26/genes.png'
-species = 'human'
-expression_boxplot(norm_ctx_fn, gene_fn, sample_meta_fn, variables, species, figure)
+#================================================
+#           gene expression boxplot
+#================================================
+norm_ctx_fn = '/media/CD38/tpm.tsv'
+gene_fn = '/media/CD38/genes.txt'
+sample_meta_fn = '/media/CD38/condition.tsv'
+figure = '/media/CD38//genes_boxplot.png'
+species = 'mouse'
+logTrans = F
+variables = c('Strain','Diet')
+expression_boxplot(norm_ctx_fn, gene_fn, sample_meta_fn, variables, species, figure, logTrans)
 
-#====== Nanostring DE analysis ==================
+#================================================
+#           Enhanced volcano plot
+#================================================
+fn = '/media/EphB2/DESeq2/2A_Cre_EphB2_sg_VS_2B_Cre_SC_sg/2A_Cre_EphB2_sg_VS_2B_Cre_SC_sg.result.csv'
+res = read.csv(fn,row.names=1)
+png('/media/EphB2/volcano.png')
+plot.enhancedVolcano(res, 'mouse', 1, 0.05, '2A_Cre_EphB2_sg_VS_2B_Cre_SC_sg')
+dev.off()
+
+plot.enhancedVolcano = function(res, species, lfc_cutoff, alpha, title) {
+  ## define y axis
+  y_max  = -log10(min(res$padj,na.rm=T)) + 1
+  
+  ## Add annotation information
+  l <- addAnnoByVector(truncateEnsemblID(rownames(res)), species)
+  
+  EnhancedVolcano(res,
+                  lab = l$symbol,
+                  x = 'log2FoldChange',
+                  y = 'pvalue',
+                  title = title,
+                  pCutoff = alpha,
+                  FCcutoff = lfc_cutoff,
+                  pointSize = 1.0,
+                  labSize = 3.0,
+                  drawConnectors = TRUE,
+                  widthConnectors = 0.75,
+                  ylim = c(0, 6))
+}
+#================================================
+#          Nanostring DE analysis
+#================================================
 cts.mat = read.combined_nano_cts(cts_file)
 dim(cts.mat)
 
@@ -149,3 +208,4 @@ if (!verify.meta(cts.mat, sample.meta)) {
 compare_df = read.table(comparison.file,header=T, sep="\t")
 
 DE.DESeq2.NanoString(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, species)
+
