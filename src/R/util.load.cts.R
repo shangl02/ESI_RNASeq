@@ -45,7 +45,8 @@ read_merge.cts = function(pattern, v, patName) {
 
 ## Combined counts
 read.combined_cts = function(file) {
-  cts.list = read.table(file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+  delim=ifelse(tolower(tools::file_ext(file))=='csv', ',','\t')
+  cts.list = read.table(file, sep=delim, header=TRUE, stringsAsFactors = FALSE)
   genes <- cts.list[,1]
   cts.list[1] = NULL
   cts.mat = matrix(unlist(cts.list), nrow=length(genes), ncol = length(cts.list))
