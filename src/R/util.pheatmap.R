@@ -25,7 +25,7 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   genes = read.table(gene_fn)$V1
   overlap_genes = c()
   for (g in genes) {
-    if (g %in% cts.mtx$symbol) {
+    if (g %in% rownames(cts.mtx)) {
       overlap_genes = c(overlap_genes, g)
     }
   }
