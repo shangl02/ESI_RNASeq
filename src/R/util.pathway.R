@@ -9,7 +9,8 @@ suppressPackageStartupMessages({
 })
 
 plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
-  
+  gene_list = gene_list[unique(names(gene_list))] # get unique genes
+  gene_list = sort(gene_list, decreasing=T)
   if (tolower(pathDB) == "kegg") {
     ## enrichment analysis
     print("Pathway analysis with KEGG")
@@ -20,7 +21,7 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
     
     ## GSEA
     p_gse <- gseKEGG(geneList = gene_list, organism = species,
-                     nPerm = 10000, minGSSize = 3, maxGSSize = 800, pvalueCutoff = 0.1, verbose = FALSE)
+                      pvalueCutoff = 0.1, verbose = FALSE)
     # set readable
     if (species == 'mouse'){
       p_enrich = setReadable(p_enrich, org.Mm.eg.db, keyType="ENTREZID")
@@ -34,7 +35,7 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
     p_enrich <- enrichGO(gene = names(gene_list), OrgDb = dbID, 
                          readable = T, ont = "BP", pvalueCutoff = 0.05, qvalueCutoff = 0.10)
     p_gse <- gseGO(geneList=gene_list, ont ="ALL", keyType = "ENTREZID", OrgDb = get(dbID),
-                   nPerm = 10000, minGSSize = 3, maxGSSize = 800, pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "none")
+                   pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "none")
   }
   
   # write Enrichment result
