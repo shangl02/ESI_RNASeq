@@ -28,7 +28,8 @@ plot.vst = function(dds, vsd, rld) {
   colnames(df)[1:2] <- c("x", "y")  
   lvls <- c("log2(x + 1)", "vst", "rlog")
   df$transformation <- factor(df$transformation, levels=lvls)
-  ggplot(df, aes(x = x, y = y)) + geom_hex(bins = 80) +
+  ggplot(df, aes(x = x, y = y)) + 
+    geom_hex(bins = 80) +
     coord_fixed() + facet_grid( . ~ transformation) +ggtitle("Comparison of un-transformed vs vst vs rlog")
 }
 
@@ -53,8 +54,9 @@ plot.pca.vst = function(vsd, v) {
   ## PCA plot
   pcaData <- plotPCA(vsd, intgroup = v, returnData = TRUE)
   percentVar <- round(100 * attr(pcaData, "percentVar"))
-  ggplot(pcaData, aes(x = PC1, y = PC2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])))) +
+  ggplot(pcaData, aes(x = PC1, y = PC2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])),label=name)) +
     geom_point(size =3) +
+    geom_text_repel(hjust=0,vjust=0) +
     xlab(paste0("PC1: ", percentVar[1], "% variance")) +
     ylab(paste0("PC2: ", percentVar[2], "% variance")) +
     coord_fixed() +
@@ -64,8 +66,10 @@ plot.pca.vst = function(vsd, v) {
 plot.mds.vst = function(vsd, v, sampleDistMatrix) {
   mds <- as.data.frame(colData(vsd)) %>%
     cbind(cmdscale(sampleDistMatrix))
-  ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])))) +
-    geom_point(size = 3) + coord_fixed() + ggtitle("MDS with VST data")
+  ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=Sample)) +
+    geom_point(size = 3) + geom_text_repel(hjust=0,vjust=0) +
+    coord_fixed() + 
+    ggtitle("MDS with VST data")
 }
 
 
@@ -76,8 +80,10 @@ plot.glmpca = function(dds, v) {
   for (variable in v) {
     gpca.dat[[variable]] <- dds[[variable]]
   }
-  ggplot(gpca.dat, aes(x = dim1, y = dim2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1]))))+
-    geom_point(size =3) + coord_fixed() + ggtitle("glmpca - Generalized PCA")
+  gpca.dat[['Sample']]<-rownames(gpca.dat)
+  ggplot(gpca.dat, aes(x = dim1, y = dim2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=Sample))+
+    geom_point(size =3) + geom_text_repel(hjust=0,vjust=0) +
+    coord_fixed() + ggtitle("glmpca - Generalized PCA")
 }
 
 plot.mds = function(dge, v) {
@@ -85,7 +91,9 @@ plot.mds = function(dge, v) {
   mds <- plotMDS(dge, pch="*", col=as.numeric(dge$samples$tmpGroup), plot=F)
   names(mds)
   data.frame(x=mds$x, y=mds$y, dge$samples)%>%
-    ggplot(aes(x=x, y=y, col=tmpGroup))+geom_point() + ggtitle("MDS plot")
+    ggplot(aes(x=x, y=y, col=tmpGroup, label=Sample))+
+    geom_point() + geom_text_repel()+
+    ggtitle("MDS plot")
 }
 
 
