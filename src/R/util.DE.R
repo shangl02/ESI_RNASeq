@@ -5,12 +5,15 @@ suppressPackageStartupMessages({
   require(DESeq2);
   require(limma);
   require(edgeR);
+  require(stats);
   require(stringr);
   require(apeglm);
   require(gage);
   require(gageData);
   require(EnhancedVolcano)
 })
+
+
 
 DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species) {
   col <- colnames(compare_df)
@@ -112,14 +115,59 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
   }
 }
 
-DE.Voom = function(dge, model_matrix) {
-  v <- voom(counts=dge, design=model_matrix) 
-  fit <- lmFit(v, model_matrix)
-  cont.matrix <- makeContrasts(GroupGroup1-GroupControl, levels=model_matrix)
-  fit1 <- contrasts.fit(fit, cont.matrix)
-  fit2 <- eBayes(fit1)
-  p <- plotSA(fit2, main="Final model: Mean-variance trend")
-  return(list(fit1, fit2, p))
+
+DE.limma = function(cts.mat, sample.meta, compare_df, min_count, min_total_count, outdir, lfc_cutoff, alpha, topN, species) {
+  col <- colnames(compare_df)
+  row <- nrow(compare_df)
+  
+  for (i in 1:row) {
+    tryCatch({
+      # 1st part, list the control sample and test sample
+      ctrl = as.vector(compare_df[i,'control'])
+      test = as.vector(compare_df[i,'test'])
+      print(paste0('Process conparison ', ctrl, ' vs ', test))
+      
+      sub_cond_df = sample.meta[sample.meta$mergeCond %in% c(ctrl,test),]
+      row.names(sub_cond_df) = sub_cond_df$Sample
+      # sub expression df
+      sub_expr_df = cts.mat[,row.names(sub_cond_df)]
+      
+      dge = DGEList(sub_expr_df, samples= sub_cond_df) 
+      
+      ## filter low expression genes
+      #keep.exprs<-filterByExpr(dge, group=dge$samples$mergeCond, min.count=min_count, min.total.count=min_total_count)
+      #dge <- dge[keep.exprs,, keep.lib.sizes=FALSE]
+      
+      design = model.matrix(~mergeCond, data=sub_cond_df)
+      v <- voom(counts=dge, design=design)
+      fit <- lmFit(v, design)
+      cont.matrix <- makeContrasts(get(test)-get(ctrl), levels=c(test, ctrl))
+      fit1 <- contrasts.fit(fit, cont.matrix)
+      fit2 <- eBayes(fit1)
+      p <- plotSA(fit2, main="Final model: Mean-variance trend")
+      
+      df<-as.data.frame(fit2)
+      rownames(df)<-attributes(fit2$coefficients)[[2]][[1]]
+      
+      # 
+      comparison = str_replace_all(paste(test, ctrl, sep="_VS_"), '[ :,>]','_')
+      path = file.path(outdir, comparison)
+      dir.create(path)
+      write.csv(df, file.path(path, paste0(comparison, '.fit.txt')), col.names=TRUE, quote=FALSE)
+      
+      #return(list(fit1, fit2, p))
+    },
+    error = function(err) {
+      print(paste("Error: ", err))
+      tryCatch({
+        dev.off()
+      }, error = function(err) {
+        print(err);
+      })
+    }, 
+    finally = function(f) {
+    })
+  }
 }
 
 plot.volcano = function(resultsObject, species, lfc_cutoff, alpha, showText=false) {
