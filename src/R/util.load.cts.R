@@ -48,7 +48,7 @@ read.combined_cts = function(file) {
   if (tolower(tools::file_ext(file))=='csv') {
     cts.list = read.csv(file, header=TRUE, stringsAsFactors = FALSE)
   } else {
-    cts.list = read.table(file, sep=delim, header=TRUE, stringsAsFactors = FALSE)
+    cts.list = read.table(file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
   }
   genes <- cts.list[,1]
   cts.list[1] = NULL
