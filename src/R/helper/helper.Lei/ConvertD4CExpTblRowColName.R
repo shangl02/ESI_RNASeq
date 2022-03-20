@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 })
 
 ## parameter setting (change it based on your file structure)
-id="GSE74201"
+id="GSE159940"
 wd=paste0('X:/projects/p049_PIAS1/counts/', id)
 exp.file = paste0('Gene_Expression.', id, '.tbl')
 skip_line=1  ## many exp files from D4C has a data description in the 1st line, set it to 0 if it is not applicable
