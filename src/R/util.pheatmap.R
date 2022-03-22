@@ -25,7 +25,7 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   genes = read.table(gene_fn)$V1
   overlap_genes = c()
   for (g in genes) {
-    if (g %in% cts.mtx$symbol) {
+    if (g %in% rownames(cts.mtx)) {
       overlap_genes = c(overlap_genes, g)
     }
   }
@@ -39,17 +39,17 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   mat_col = data.frame(group=mat_col$mergeCond,row.names=rownames(mat_col))
   
   num_colors = length(unique(col_groups$mergeCond))
-  mat_colors <- list( group= colorRampPalette(brewer.pal(9, "Set1"))(num_colors))
+  mat_colors <- list( group= colorRampPalette(brewer.pal(9, "Dark2"))(num_colors))
   names(mat_colors$group) <- unique(col_groups$mergeCond[order(col_groups$plot_order)])
   
   if (logTrans) {genes_df = log2(genes_df + 0.01)}
   png(outFig)
   pheatmap(
     mat               = genes_df,
-    color             = inferno(9),
+    color             = colorRampPalette(c("navy", "white", "firebrick3"))(50),
     border_color      = NA,
     show_colnames     = FALSE,
-    show_rownames     = TRUE,
+    show_rownames     = FALSE,
     annotation_col    = mat_col,
     annotation_colors = mat_colors,
     drop_levels       = TRUE,
