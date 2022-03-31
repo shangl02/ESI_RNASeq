@@ -1,4 +1,3 @@
-
 suppressPackageStartupMessages({
   require(clusterProfiler);
   require(enrichplot);
@@ -9,7 +8,6 @@ suppressPackageStartupMessages({
 })
 
 plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
-  
   if (tolower(pathDB) == "kegg") {
     ## enrichment analysis
     print("Pathway analysis with KEGG")
@@ -37,6 +35,7 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
                    nPerm = 10000, minGSSize = 3, maxGSSize = 800, pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "none")
   }
   
+  print('Start writing')
   # write Enrichment result
   write.table(p_enrich@result, file.path(dir, paste0(prefix, ".", pathDB, '.Enrichment.result.txt')), sep="\t", quote=FALSE, row.names = FALSE)
   
@@ -56,7 +55,6 @@ plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
 }
 
 plot.enrich<-function(file, pathway, dbID, gene_list) {
-  write.table(p_enrich@result, file.path(dir, paste0(prefix, ".", pathDB, '.enrich.result.txt')), sep="\t", quote=FALSE, row.names = FALSE)
   ## Save plots in pdf
   pdf(file)
   tryCatch(
