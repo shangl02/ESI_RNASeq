@@ -5,13 +5,14 @@ library(stringr)
 library(GOfuncR)
 library('fs')
 
+setwd('C:/Users/shangl02/source/repos/ESI_RNASeq/')
 source('src/R/util.load.cts.R')
 source('src/R/util.verify.R')
 source('src/R/util.sampleVariance.R')
 source('src/R/util.DE.R')
 source('src/R/util.pathway.R')
 
-param_file='X:/projects/p049_PIAS1/counts/GSE3790/GSE3790-GPL96/param.R'
+param_file='X:\\projects\\p046_KDM5\\RNASeq.02012022\\analysis.REdiscoverTE\\param.R'
 source(param_file)
 tpm.file=cts_file
 wd=outdir
@@ -92,6 +93,7 @@ expBarplot<-function(tpm.mat, genes, species, sample.meta, outdir, prefix) {
 }
 
 
+
 ## Load TPM matrix
 tpm.mat = read.combined_cts(tpm.file)
 
@@ -101,9 +103,13 @@ sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
 
 #################################################################
 ## Option #1 Read a input gene list and plot expression (TPM)
-selected.gene.file='X:\\projects\\p049_PIAS1\\selectedGenes.txt'
-geneList<-read.csv(selected.gene.file, row.names=1)
-expBarplot(tpm.mat, geneList[[1]], species, sample.meta, outdir, prefix)
+selected.gene.file='X:/projects/p046_KDM5/RNASeq.02012022/metadata/GeneList.Guler2017.txt'
+#geneList<-read.csv(selected.gene.file, row.names=1)  ## Two column file
+#geneList<-geneList[[1]]
+
+geneList<-scan(selected.gene.file, character(), quote = "")
+
+expBarplot(tpm.mat, geneList, species, sample.meta, outdir, prefix)
 
 #################################################################
 ## Option #2 Read a list of pathways under interest and plot expression
