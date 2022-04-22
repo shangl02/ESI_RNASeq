@@ -170,6 +170,81 @@ DE.limma = function(cts.mat, sample.meta, compare_df, min_count, min_total_count
   }
 }
 
+## 
+myLog=function(a,n){
+  if(a<0){
+    return(-1*log(abs(a),n))
+  }
+  else if (a>0) {
+    return(log(a,n))
+  }
+  else  {
+    return(log(0.01,n))
+  }
+}
+## 
+## Downstream analysis from pre-generated DE stat table (i.e. Limma)
+## Parameters
+##  df_stat: stat table
+##  startColIdx: the start col idx of the 1st comparison
+##  stepSize: the number of columns in a single comparison
+##  logOperation: bool to perform log operatio on fold change (1st column)
+##  cname: new column names
+DE.fromStatTable = function(df_stat, startColIdx, stepSize, logOperation, cname, outdir, lfc_cutoff, alpha, topN, species) {
+  
+  i=startColIdx
+  while (i <= ncol(df_stat)) {
+    result<-df_stat[,c(1, seq(i, i+stepSize-1, by=1))]
+    rownames(result)=result[[1]]
+    result[[1]]=NULL
+    title=colnames(result)[1]
+    colnames(result)<-cname
+    print(title)
+    
+    if(logOperation) {
+      result$log2FoldChange=unlist(lapply(result$log2FoldChange, function(x) myLog(x,2)))
+    }
+    
+    path=file.path(outdir, title)
+    print(path)
+    dir.create(path)
+    setwd(path)
+    
+    l = addAnnoByVector(truncateEnsemblID(rownames(result)), species)
+    result$symbol <- l$symbol
+    write.csv(result, file.path(path, paste0(title, '.result.csv')),quote=F)
+    
+    ## Volcano plot
+    pdf(file.path(path, paste0(title,'.plots.pdf')))
+    p<-plot.enhancedVolcano(result, species, lfc_cutoff, alpha, title);
+    print(p)
+    dev.off()
+    
+    sig_up <- result[result$padj < alpha & result$log2FoldChange >= lfc_cutoff,]
+    sig_up<-sig_up[order(sig_up$padj),]
+    n<-min(c(length(sig_up[[1]]), topN))
+    sig_up<-sig_up[1:n,]
+    print(paste("upreg", title, nrow(sig_up),sep=" "))
+    write.csv(sig_up, file.path(path, paste0("UpGene_lfc", lfc_cutoff,"_PValue",alpha,"_top", topN, ".txt")), row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+    
+    sig_dn <- result[result$padj < alpha & result$log2FoldChange <= -lfc_cutoff,]
+    sig_dn<-sig_dn[order(sig_dn$padj),]
+    n<-min(c(length(sig_dn[[1]]), topN))
+    sig_dn<-sig_dn[1:n,]
+    print(paste("dnreg", title, nrow(sig_dn),sep=" "))
+    write.csv(sig_dn, file.path(path, paste0("DownGene_lfc", lfc_cutoff,"_PValue",alpha, "_top", topN, ".txt")), row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+    
+    path2 <- file.path(path,'Pathway')
+    dir.create(path2)
+    analysis.pathway(sig_up, species, path2, 'Up')
+    analysis.pathway(sig_dn, species, path2, 'Down')
+    
+    ## 
+    i=i+stepSize  
+  }
+}
+
+
 plot.volcano = function(resultsObject, species, lfc_cutoff, alpha, showText=false) {
   ## Add annotation information
   addAnno(resultsObject, species)
