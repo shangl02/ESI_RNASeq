@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
 })
 source('src/R/util.load.cts.R')
 
-plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig, logTrans=T) {
+plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig, logTrans=T,show_rownames=T) {
   # this file plots heatmap for interested gene expression in all of the samples
   # cts_file: the normalized count file, first column is gene name, column names are samples
   # sample.meta.file: the meta data file, first column needs to be sample names corresponds to cts_file
@@ -13,8 +13,8 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   # gene_fn: genes that want to show in the heatmap, each line needs to be one gene.
   # outFig: output figure
   # logTrans: if do log2 transform of the count data
-  cts.mtx = read.table(cts_file, sep='\t', header=T,row.names=1)
-  sample.meta <- read.csv(sample.meta.file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+  cts.mtx = read.table(norm_cts_fn, sep='\t', header=T,row.names=1)
+  sample.meta <- read.csv(sample_meta_fn, sep='\t', header=TRUE, stringsAsFactors = FALSE)
   sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
   # annotate ensembl id to symbol
   anno <- addAnnoByVector(truncateEnsemblID(rownames(cts.mtx)), species)
@@ -25,7 +25,7 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   genes = read.table(gene_fn)$V1
   overlap_genes = c()
   for (g in genes) {
-    if (g %in% cts.mtx$symbol) {
+    if (g %in% rownames(cts.mtx)) {
       overlap_genes = c(overlap_genes, g)
     }
   }
@@ -39,17 +39,17 @@ plot.pheatmap = function(cts_file, sample.meta.file, variables, gene_fn, outFig,
   mat_col = data.frame(group=mat_col$mergeCond,row.names=rownames(mat_col))
   
   num_colors = length(unique(col_groups$mergeCond))
-  mat_colors <- list( group= colorRampPalette(brewer.pal(9, "Set1"))(num_colors))
+  mat_colors <- list( group= colorRampPalette(brewer.pal(9, "Dark2"))(num_colors))
   names(mat_colors$group) <- unique(col_groups$mergeCond[order(col_groups$plot_order)])
   
   if (logTrans) {genes_df = log2(genes_df + 0.01)}
   png(outFig)
   pheatmap(
     mat               = genes_df,
-    color             = inferno(9),
+    color             = colorRampPalette(c("navy", "white", "firebrick3"))(50),
     border_color      = NA,
     show_colnames     = FALSE,
-    show_rownames     = TRUE,
+    show_rownames     = show_rownames,
     annotation_col    = mat_col,
     annotation_colors = mat_colors,
     drop_levels       = TRUE,
