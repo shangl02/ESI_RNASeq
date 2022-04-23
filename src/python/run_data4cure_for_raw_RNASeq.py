@@ -33,13 +33,6 @@ domain = args.domain
 user = args.user
 pw = args.pw
 
-# expr_fn = 'C:/Users/lis262/Work/p001_RNASeq/d4c/raw_counts_dmso.tsv'
-# meta_fn = 'C:/Users/lis262/Work/p001_RNASeq/d4c/condition_dmso.tsv'
-# cmp_fn = 'C:/Users/lis262/Work/p001_RNASeq/d4c/compare.tsv'
-# variables = 'Cytokine,Nucleotide,Treatment'
-# conditions = variables.split(',')
-# data_type = 'count'
-# domain = 'IL26'
 
 def log2_transform(df):
     df = np.log2(df + 1)
@@ -51,6 +44,8 @@ def sub_meta(meta_fn, sub_meta_fn, conditions, ctrl, test):
     meta_df['mergeCond'] = meta_df[conditions].apply(lambda x: ':'.join(x) ,axis=1)
     sub = [ctrl, test]
     meta_df = meta_df.query('mergeCond in @sub')
+    meta_df = meta_df.reset_index(drop=True)
+    meta_df['mergeCond'] = meta_df['mergeCond'].map(lambda x: 0 if x == ctrl else 1)
     meta_df.to_csv(sub_meta_fn, sep='\t', index=False)
     samples = meta_df['Sample'].tolist()
     return samples
@@ -72,10 +67,10 @@ def get_config(config_fn, ctrl, test):
     config = {'mergeCond': {
             'name': 'condition',
             'data_type_name': 'factor',
-            'data_type_type': 'character',
+            'data_type_type': 'numeric',
             'factor_levels': [
-                {'value': ctrl, 'label': ctrl_name},
-                {'value': test, 'label': test_name}
+                {'value': 0, 'label': ctrl_name},
+                {'value': 1, 'label': test_name}
             ],
             'entity_type': 'generic_entity'
         }
@@ -192,7 +187,7 @@ def run_pathway_expression(expr_tbl, meta_tbl, platform_path, domain, test_name,
             'gene_counts_table': 'My Data/'+platform_path+ '/' + os.path.basename(expr_tbl),
             'condition_var': ['condition'],
             'results_dir_selector': 'My Data/' +platform_path+'/DESeq2_analysis',
-            'domains': ['REACTOME', 'KEGG', "GO Biological Process", "GO Cellular Component", "GO Molecular Function", "MSigDB Canonical Pathways", "MSigDB Hallmark Gene Sets", "TF Targets HC","Immune Signatures","Pfizer Gene Sets v5"],
+            'domains': ['REACTOME', 'KEGG', "GO Biological Process", "GO Cellular Component", "GO Molecular Function", "MSigDB Canonical Pathways", "MSigDB Hallmark Gene Sets", "TF Targets HC","Immune Signatures","Pfizer Gene Sets v6"],
             'input_data_type': 'Gene Expression (counts)'
         }
     elif data_type == 'tpm':
@@ -203,7 +198,7 @@ def run_pathway_expression(expr_tbl, meta_tbl, platform_path, domain, test_name,
             'gene_counts_table': 'My Data/'+platform_path+ '/' + os.path.basename(expr_tbl),
             'condition_var': ['condition'],
             'results_dir_selector': 'My Data/' +platform_path+'/DESeq2_analysis',
-            'domains': ['REACTOME', 'KEGG', "GO Biological Process", "GO Cellular Component", "GO Molecular Function", "MSigDB Canonical Pathways", "MSigDB Hallmark Gene Sets", "TF Targets HC","Immune Signatures","Pfizer Gene Sets v5"],
+            'domains': ['REACTOME', 'KEGG', "GO Biological Process", "GO Cellular Component", "GO Molecular Function", "MSigDB Canonical Pathways", "MSigDB Hallmark Gene Sets", "TF Targets HC","Immune Signatures","Pfizer Gene Sets v6"],
             'input_data_type': 'Gene Expression (continuous)'
         }
     submission_spec = app.application_ops().submission_spec_from_dict(spec)
@@ -230,6 +225,6 @@ if __name__ == '__main__':
         # 2. upload to d4c
         platform_path = f'bulkRNASeq/{test_name}_VS_{ctrl_name}'
         upload_file2_d4c(expr_tbl, meta_tbl, platform_path)
-        # 3. run pathway expression
+        # # 3. run pathway expression
         run_pathway_expression(expr_tbl, meta_tbl, platform_path, domain, test_name, ctrl_name, data_type)
 
