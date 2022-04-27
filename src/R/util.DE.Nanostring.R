@@ -77,7 +77,7 @@ DE.DESeq2.NanoString = function(cts.mat, sample.meta, compare_df, min_total_coun
       # 2. Do the DE analysis
       dds <- DESeqDataSetFromMatrix(countData = counts(set1),
                                     colData = pData(set1),
-                                    design = ~ condition)
+                                    design = ~ W1 + condition)
       dds$condition <- relevel(dds$condition, ref = ctrl)
       dds <- DESeq(dds)
       contrast = c('condition',test,ctrl)
