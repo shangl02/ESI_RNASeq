@@ -22,7 +22,7 @@ Before running this, install the following packages:
 * -c: compare file, with two columns **control** and **test**, each row represents a DE analysis between test and control, the value should be ':' mergeed of values in columns indicated using -v variable.
 * -v: ',' separated different column names in file condition.tsv. The conditions from different columns will be merged by ':' to generate unique condiiton for DE comparisoin.
 * -d: should be 'count' or 'tpm', count indicates raw count data, 'tpm' indicate tpm value in expression.tsv.
-* --domain: an arbitrary name to tag the study, D4C will use this name to create folder for your analysis results.
+* --domain: an arbitrary name to tag the study, D4C will use this name as a sub folder under the root folder bulkRNASeq and will use this as name for your analysis results.
 * --user: your d4c username
 * --pw: your d4c password
 
@@ -37,6 +37,6 @@ Before running this, install the following packages:
 
 * -i: input DESEq2 result file
 * -o: out tbl file for d4c format
-* --domain: an arbitrary name to tag the study, D4C will use this name to create folder for your analysis results.
+* --domain: an arbitrary name to tag the study, D4C will use this name as a sub folder under the root folder bulkRNASeq and will use this as name for your analysis results.
 * --user: your d4c username
 * --pw: your d4c password

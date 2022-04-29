@@ -167,7 +167,7 @@ if __name__ == '__main__':
     # 1. format the table
     format_file2tbl(in_fn, out_tbl)
     # 2.1 submit to the data4cure using api
-    platform_path = 'bulkRNASeq/' + os.path.basename(out_tbl).split('.')[0] + '_DESeq2_result'
+    platform_path = f'bulkRNASeq/{domain}/' + os.path.basename(out_tbl).split('.')[0] + '_DESeq2_result'
     upload_file2_d4c(out_tbl, platform_path)
     # 2.2 run data4cure
     run_pathway_expression(out_tbl, platform_path, domain)
