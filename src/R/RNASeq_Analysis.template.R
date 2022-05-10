@@ -82,14 +82,15 @@ setwd(outdir)
 
 ## Load sample metadata
 sample.meta <- read.csv(sample.meta.file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+stopifnot("Sample" %in% colnames(sample.meta))
 sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, '.')
 dim(sample.meta)
-
-## add filter of based on sample metadata
-sample.meta=sample.meta[sample.meta$Quality=='good',]
-cts.mat = cts.mat[,colnames(cts.mat) %in% sample.meta$Sample]
-dim(cts.mat)
-dim(sample.meta)
+# 
+# ## add filter of based on sample metadata
+# sample.meta=sample.meta[sample.meta$Quality=='good',]
+# cts.mat = cts.mat[,colnames(cts.mat) %in% sample.meta$Sample]
+# dim(cts.mat)
+# dim(sample.meta)
 
 ## Verify count table and sample metadata
 if (!verify.meta(cts.mat, sample.meta)) {
