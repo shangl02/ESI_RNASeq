@@ -40,7 +40,7 @@ def log2_transform(df):
 
 
 def sub_meta(meta_fn, sub_meta_fn, conditions, ctrl, test):
-    meta_df = pd.read_csv(meta_fn,sep='\t',header=0)
+    meta_df = pd.read_csv(meta_fn,sep='\t|,',header=0,engine='python')
     meta_df['mergeCond'] = meta_df[conditions].apply(lambda x: ':'.join(x) ,axis=1)
     sub = [ctrl, test]
     meta_df = meta_df.query('mergeCond in @sub')
@@ -53,7 +53,7 @@ def sub_meta(meta_fn, sub_meta_fn, conditions, ctrl, test):
 
 def sub_expr(expr_fn, sub_expr_fn, samples, data_type):
     '''extract sub expression matrix of interested samples'''
-    expr_df = pd.read_csv(expr_fn,sep='\t',header=0,index_col=0)
+    expr_df = pd.read_csv(expr_fn,sep='\t|,',header=0,index_col=0,engine='python')
     expr_df.index.name = 'gene'
     if data_type == 'tpm':
         expr_df = log2_transform(expr_df)
@@ -214,7 +214,7 @@ def run_pathway_expression(expr_tbl, meta_tbl, platform_path, domain, test_name,
 
 
 if __name__ == '__main__':
-    cmp_df = pd.read_csv(cmp_fn,sep='\t',header=0)
+    cmp_df = pd.read_csv(cmp_fn,sep='\t|,',header=0,engine='python')
     for idx, row in cmp_df.iterrows():
         ctrl = row['control']
         test = row['test']
