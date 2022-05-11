@@ -54,7 +54,7 @@ def format_ETSV2tbl(in_fn, out_fn):
                 ['gene name'] + [''] * 7
     ]
 
-    in_df = pd.read_csv(in_fn,header=0,index_col=0)
+    in_df = pd.read_csv(in_fn,header=0,index_col=0,sep='\t|,',engine='python')
     in_df['foldChange'] = 2 ** in_df['log2FoldChange']
     in_df = in_df[head['entity.label']]
     if 'symbol' in in_df.columns:
@@ -68,7 +68,7 @@ def format_ETSV2tbl(in_fn, out_fn):
 
 
 def format_file2tbl(in_fn, out_tbl):
-    in_df = pd.read_csv(in_fn,header=0,index_col=0)
+    in_df = pd.read_csv(in_fn,header=0,index_col=0,sep='\t|,',engine='python')
     in_df.index.name = 'gene'
     in_df['foldChange'] = 2 ** in_df['log2FoldChange']
     columns = ['baseMean','foldChange','lfcSE','stat','pvalue','padj']

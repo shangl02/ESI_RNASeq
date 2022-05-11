@@ -105,7 +105,7 @@ plot.mds = function(dge, v, labelCol='Sample') {
 
 plot.svaseq = function(dge, label_col='Sample'){
   cpm_new <- cpm(dge)
-  mod  <- model.matrix(~ Group, dge$samples)
+  mod  <- model.matrix(~ mergeCond, dge$samples)
   mod0 <- model.matrix(~   1, dge$samples)
   svseq <- svaseq(cpm_new, mod, mod0)
   df <- data.frame(svseq$sv, dge.filter$samples)
@@ -115,4 +115,65 @@ plot.svaseq = function(dge, label_col='Sample'){
     ggplot(aes(x=X1, y=X2, col=Group, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
     
   }
+=======
+  data.frame(svseq$sv, dge.filter$samples) %>%
+    ggplot(aes(x=X1, y=X2, col=mergeCond, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
+}
+
+
+process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=5, min_total_count=30) {
+  design.formula = build.formula(variables)
+  
+  ## build dge and dds
+  dge <- DGEList(cts.mat, samples=sample.meta)
+  design <- model.matrix(design.formula, data=dge$samples)
+  keep <- filterByExpr(dge, design, min.count=min_count, min.total.count=min_total_count)
+  dge.filter <- dge[keep, , keep.lib.sizes=F]
+  
+  dds <- DESeqDataSetFromMatrix(countData = as.matrix(round(dge.filter$counts)),
+                                colData = dge.filter$samples,
+                                design = design.formula)
+  
+  ## Sample Variance Section
+  vsd <- vst(dds, blind = FALSE)
+  rld <- rlog(dds, blind = FALSE)
+  dds <- estimateSizeFactors(dds) #required for log2 approach which need size factors to account for sequencing depth, and specify normalized=TRUE
+  l <- calc.sampleDist.vst(vsd, variables, '_') ## calculate sample distance matrix
+  norm_count = counts(dds,normalized=TRUE)
+  norm_count = data.frame(cbind(geneid=rownames(norm_count),norm_count))
+  anno <- addAnnoByVector(truncateEnsemblID(rownames(norm_count)), species)
+  norm_count$symbol = anno$symbol
+  write.table(norm_count, 'norm_count.tsv',sep='\t',quote=F,row.names=F)
+  ## plotting
+  tryCatch(
+    {
+      print("Generating pdf")
+      pdf(file='SampleVariance.all.pdf')
+      p1<-plot.mds(dge.filter, variables)
+      p2<-plot.glmpca(dds, variables)
+      p3<-plot.vst(dds,vsd, rld)
+      test = l$dist.mat
+      colnames(test) = sample.meta$Sample
+      plot.sampleDist.vst(l$dist, test) # doesn't need to print it
+      p5<-plot.mds.vst(vsd, variables, l$dist.mat)
+      p6<-plot.pca.vst(vsd, variables)
+      p7<-plot.svaseq(dge.filter, 'Sample')
+      # plot.topNVar.vst(vsd, 20)
+      print(p1)
+      print(p2)
+      print(p3)
+      print(p5)
+      print(p6)
+      print(p7)
+      dev.off()
+    }, 
+    error = function(err) {
+      print(paste("Error: ", err))
+      dev.off()
+    }, 
+    finally =function(msg){
+      print("in finally")
+      dev.off()
+    }
+  )
 }
