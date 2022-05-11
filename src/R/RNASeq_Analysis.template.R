@@ -33,13 +33,13 @@ process.sampleVariance.all = function(cts.mat, sample.meta, variables,min_count=
   tryCatch(
     {
       print("Generating pdf")
-      pdf(file='SampleVariance.all.pdf', width=10)
-      p1<-plot.mds(dge.filter, variables)
-      p2<-plot.glmpca(dds, variables)
+      pdf(file='SampleVariance.all.pdf', width=12)
+      p1<-plot.mds(dge.filter, variables, 'SampleName')
+      p2<-plot.glmpca(dds, variables, 'SampleName')
       p3<-plot.vst(dds,vsd, rld)
       p4<-plot.sampleDist.vst(l$dist, l$dist.mat)
-      p5<-plot.mds.vst(vsd, variables, l$dist.mat)
-      p6<-plot.pca.vst(vsd, variables)
+      p5<-plot.mds.vst(vsd, variables, l$dist.mat, 'SampleName')
+      p6<-plot.pca.vst(vsd, variables, 'SampleName')
       # p7<-plot.svaseq(dge.filter, 'Sample')
       ## plot.topNVar.vst(vsd, 20)
       print(p1)
