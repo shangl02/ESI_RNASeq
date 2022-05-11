@@ -50,58 +50,72 @@ plot.sampleDist.vst<- function(sampleDists, sampleDistMatrix){
            col = colors, fontsize=8)
 }
 
-plot.pca.vst = function(vsd, v) {
+plot.pca.vst = function(vsd, v, labelCol='Sample') {
   ## PCA plot
   pcaData <- plotPCA(vsd, intgroup = v, returnData = TRUE)
   percentVar <- round(100 * attr(pcaData, "percentVar"))
-  ggplot(pcaData, aes(x = PC1, y = PC2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])),label=name)) +
+  meta<-data.frame(vsd@colData@listData)
+  meta<-meta[,-which(names(meta) %in% v)]
+  pcaData <- merge(pcaData, meta, by=0, all.x=TRUE)
+  ggplot(pcaData, aes(x = PC1, y = PC2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])),label=get(labelCol))) +
     geom_point(size =3) +
     geom_text_repel(hjust=0,vjust=0) +
     xlab(paste0("PC1: ", percentVar[1], "% variance")) +
     ylab(paste0("PC2: ", percentVar[2], "% variance")) +
     coord_fixed() +
-    ggtitle("PCA with VST data")
+    ggtitle("PCA with VST data") + 
+    stat_ellipse()+stat_ellipse(level=0.8)
 }
 
-plot.mds.vst = function(vsd, v, sampleDistMatrix) {
+plot.mds.vst = function(vsd, v, sampleDistMatrix, labelCol='Sample') {
   mds <- as.data.frame(colData(vsd)) %>%
     cbind(cmdscale(sampleDistMatrix))
-  ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=Sample)) +
+  ggplot(mds, aes(x = `1`, y = `2`, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=get(labelCol))) +
     geom_point(size = 3) + geom_text_repel(hjust=0,vjust=0) +
     coord_fixed() + 
     ggtitle("MDS with VST data")
 }
 
 
-plot.glmpca = function(dds, v) {
+plot.glmpca = function(dds, v, labelCol='Sample') {
   ## PCA plot using generalized PCA
   gpca <- glmpca(counts(dds), L=2)
   gpca.dat <- gpca$factors
-  for (variable in v) {
-    gpca.dat[[variable]] <- dds[[variable]]
-  }
-  gpca.dat[['Sample']]<-rownames(gpca.dat)
-  ggplot(gpca.dat, aes(x = dim1, y = dim2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=Sample))+
-    geom_point(size =3) + geom_text_repel(hjust=0,vjust=0) +
-    coord_fixed() + ggtitle("glmpca - Generalized PCA")
+  # for (variable in v) {
+  #   gpca.dat[[variable]] <- dds[[variable]]
+  # }
+  gpca.dat <- merge(gpca.dat, data.frame(dds@colData@listData), by='row.names',all=TRUE)
+  
+  ggplot(gpca.dat, aes(x = dim1, y = dim2, color = get(v[1]), shape = get(ifelse(length(v)>1, v[2], v[1])), label=get(labelCol))) +
+    geom_point() + geom_text_repel() +
+    coord_fixed() +
+    ggtitle("glmpca - Generalized PCA")
 }
 
-plot.mds = function(dge, v) {
+plot.mds = function(dge, v, labelCol='Sample') {
   dge$samples$tmpGroup = pasteMultiCol(dge$samples, v, '_')
   mds <- plotMDS(dge, pch="*", col=as.numeric(dge$samples$tmpGroup), plot=F)
   names(mds)
-  data.frame(x=mds$x, y=mds$y, dge$samples)%>%
-    ggplot(aes(x=x, y=y, col=tmpGroup, label=Sample))+
+  data.frame(x=mds$x, y=mds$y, dge$samples) %>%
+    ggplot(aes(x=x, y=y, col=tmpGroup, label=get(labelCol)))+
     geom_point() + geom_text_repel()+
     ggtitle("MDS plot")
 }
 
 
-plot.svaseq = function(dge, label_col){
+plot.svaseq = function(dge, label_col='Sample'){
   cpm_new <- cpm(dge)
   mod  <- model.matrix(~ mergeCond, dge$samples)
   mod0 <- model.matrix(~   1, dge$samples)
   svseq <- svaseq(cpm_new, mod, mod0)
+  df <- data.frame(svseq$sv, dge.filter$samples)
+  if (showLabel) {
+    ggplot(aes(x=X1, y=X2, col=Group, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
+  } else {
+    ggplot(aes(x=X1, y=X2, col=Group, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
+    
+  }
+=======
   data.frame(svseq$sv, dge.filter$samples) %>%
     ggplot(aes(x=X1, y=X2, col=mergeCond, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
 }
