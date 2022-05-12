@@ -2,3 +2,9 @@ Ticket ID: TS0
 Contributor: Lei Shang
 Date: 5/12/2022
 Description: Add ChangeLog
+
+
+Ticket ID: TS1
+Contributor: Lei Shang
+Date: 5/12/2022
+Description:  Modify SampleVariance to take labelCol and add PCA plot for rlog counts

@@ -18,6 +18,9 @@ species='mouse'
 min_count=5
 min_total_count=30
 
+## label column used in PCA
+labelCol='Sample'
+
 ## variables in sample meta
 variables<-c('Sex', 'Treatment')  ## Variables in design
 
