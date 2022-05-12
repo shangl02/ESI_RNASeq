@@ -69,7 +69,7 @@ compare_df = read.table(comparison.file,header=T, sep="\t")
 # }
 
 # Generate sample variance report
-process.sampleVariance.all(cts.mat, sample.meta, variables)
+process.sampleVariance.all(cts.mat, sample.meta, variables, min_count, min_total_count, labelCol)
 
 ## DE analysis
 if (exists("DE_algo") && DE_algo=="limma") {
