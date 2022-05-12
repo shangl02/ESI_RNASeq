@@ -115,7 +115,6 @@ plot.svaseq = function(dge, label_col='Sample'){
     ggplot(aes(x=X1, y=X2, col=Group, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
     
   }
-=======
   data.frame(svseq$sv, dge.filter$samples) %>%
     ggplot(aes(x=X1, y=X2, col=mergeCond, label=get(label_col)))+geom_label() + ggtitle("SVA plot")
 }
