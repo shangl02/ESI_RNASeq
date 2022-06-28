@@ -54,6 +54,7 @@ def sub_meta(meta_fn, sub_meta_fn, conditions, ctrl, test):
 def sub_expr(expr_fn, sub_expr_fn, samples, data_type):
     '''extract sub expression matrix of interested samples'''
     expr_df = pd.read_csv(expr_fn,sep='\t|,',header=0,index_col=0,engine='python')
+    expr_df = expr_df.round().astype(int)
     expr_df.index.name = 'gene'
     if data_type == 'tpm':
         expr_df = log2_transform(expr_df)
