@@ -223,7 +223,7 @@ if __name__ == '__main__':
         # 1. format files
         expr_tbl, meta_tbl = format_files(expr_fn, meta_fn, conditions, data_type, domain, ctrl, test)
         # 2. upload to d4c
-        platform_path = f'bulkRNASeq/{domain}/{test_name}_VS_{ctrl_name}'
+        platform_path = f'BulkRNASeq/{domain}/{test_name}_VS_{ctrl_name}'
         upload_file2_d4c(expr_tbl, meta_tbl, platform_path)
         # # 3. run pathway expression
         run_pathway_expression(expr_tbl, meta_tbl, platform_path, domain, test_name, ctrl_name, data_type)
