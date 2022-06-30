@@ -14,6 +14,7 @@ expression_boxplot = function(norm_ctx_fn, gene_fn, sample_meta_fn, variables, s
   # figure: output figure name
   # logTrans: log transform of the expression matrix or not.
   genes = read.table(gene_fn)$V1
+  genes = toupper(genes)
   sample.meta <- read.csv(sample_meta_fn, sep='\t', header=TRUE, stringsAsFactors = FALSE)
   sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
   samples = sample.meta$Sample
@@ -22,11 +23,13 @@ expression_boxplot = function(norm_ctx_fn, gene_fn, sample_meta_fn, variables, s
   norm_df = norm_df[,samples]
   if (logTrans) {norm_df = log2(norm_df + 0.1)}
   norm_df = addAnno(norm_df, species)[[1]]
+  norm_df$symbol = toupper(norm_df$symbol)
   gene_df = as.data.frame(t(norm_df[norm_df$symbol %in% genes,]))
   colnames(gene_df) = gene_df['symbol',]
   gene_df$Sample = rownames(gene_df)
   meta_col = c('Sample','mergeCond','plot_order')
   gene_df = merge(gene_df, sample.meta[,c(meta_col)], by='Sample')
+  n_genes = nrow(gene_df)
   # in case there's duplicate gene names
   colnames(gene_df) = make.unique(colnames(gene_df))
   genes = setdiff(colnames(gene_df), meta_col)
@@ -49,7 +52,15 @@ expression_boxplot = function(norm_ctx_fn, gene_fn, sample_meta_fn, variables, s
   levels = unique(count_df$condition)
   count_df$condition = factor(count_df$condition, levels=levels)
   
-  png(figure, width = 800, height = 480)
+  n_col = sqrt(n_genes)
+  if (n_col == round(n_col)) {
+    n_row = n_col
+  } else {
+    n_row = round(n_col)
+    n_col = n_row + 1
+  }
+  
+  png(figure, width = 100 * n_col + 100, height = 100 * n_row)
   p = ggplot(count_df, aes(x=gene, y=tpm, fill=condition)) + geom_boxplot() +
         facet_wrap(~gene, scale="free")
   if (logTrans) {p = p + labs(y = 'log2 of norm count')}
