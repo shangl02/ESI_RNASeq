@@ -1,6 +1,6 @@
 ## Parameter
 ## Count file
-cts_file = "/media/CD38/raw_count.tsv"
+cts_file = "/home/rstudio/p001_RNASeq/CD38/gene_counts_sub.csv"
 
 
 ## Load counts
@@ -9,8 +9,8 @@ metric.vec = c(1,5) # gene + count or TMP (depend on the counter)
 patName = 'S\\d+'
 
 ## sample meta file
-sample.meta.file = "/media/CD38/condition.tsv"
-comparison.file = "/media/CD38/compare.tsv"
+sample.meta.file = "/home/rstudio/p001_RNASeq/CD38/20220617.CD38.Mouse.Lung.Metadata_sub.tsv"
+comparison.file = "/home/rstudio/p001_RNASeq/CD38/compare.tsv"
 
 ## Species
 species='mouse'
@@ -21,10 +21,10 @@ min_total_count=30
 
 ## variables in sample meta
 # variables<-c('Cytokine','Nucleotide','Treatment')  ## Variables in design
-variables = c('Strain','Diet')
+variables = c('Condition')
 
 ## output dir
-outdir <- '/media/CD38/DESeq2'
+outdir <- '/home/rstudio/p001_RNASeq/CD38/DESeq2/'
 
 ## cutoff for DE
 lfc_cutoff=0.58
