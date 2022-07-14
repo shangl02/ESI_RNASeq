@@ -1,6 +1,5 @@
 # this file submit jobs to data4cure to run analysis modules.
 library(glue)
-system("export PATH=/home/rstudio/.local/bin:$PATH")
 
 run_d4c_for_raw_count = function(cts.mat, sample.meta, compare_df, domain, user, pwd){
   col <- colnames(compare_df)
@@ -29,7 +28,7 @@ run_d4c_for_raw_count = function(cts.mat, sample.meta, compare_df, domain, user,
       # 3rd part, run the d4c api
       code = file.path(d4c_code_path,'run_data4cure_for_raw_RNASeq.py')
       cmd = glue("python3 {code} -i {sub_count_fn} -m {sub_meta_fn} -c {sub_compare_fn} -v mergeCond -d count --domain {domain} --user {user} --pw {pwd}")
-      system2(cmd)
+      system(cmd)
     },
     error = function(err) {
       print(paste("Error:", err))
