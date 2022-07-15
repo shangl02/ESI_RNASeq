@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
 })
 source('src/R/util.load.cts.R')
 
-plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig, logTrans=T,show_rownames=T) {
+plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig, logTrans=T,show_rownames=T, z_score='none') {
   # this file plots heatmap for interested gene expression in all of the samples
   # cts_file: the normalized count file, first column is gene name, column names are samples
   # sample.meta.file: the meta data file, first column needs to be sample names corresponds to cts_file
@@ -18,11 +18,11 @@ plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig
   sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
   # annotate ensembl id to symbol
   anno <- addAnnoByVector(truncateEnsemblID(rownames(cts.mtx)), species)
-  symbol = make.unique(anno$symbol)
+  symbol = toupper(make.unique(anno$symbol))
   keep = complete.cases(symbol)
   cts.mtx = cts.mtx[keep,]
   rownames(cts.mtx) = symbol[keep]
-  genes = read.table(gene_fn)$V1
+  genes = toupper(read.table(gene_fn)$V1)
   overlap_genes = c()
   for (g in genes) {
     if (g %in% rownames(cts.mtx)) {
@@ -39,10 +39,16 @@ plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig
   mat_col = data.frame(group=mat_col$mergeCond,row.names=rownames(mat_col))
   
   num_colors = length(unique(col_groups$mergeCond))
-  mat_colors <- list( group= colorRampPalette(brewer.pal(9, "Dark2"))(num_colors))
+  mat_colors <- list( group= colorRampPalette(brewer.pal(8, "Dark2"))(num_colors))
   names(mat_colors$group) <- unique(col_groups$mergeCond[order(col_groups$plot_order)])
   
   if (logTrans) {genes_df = log2(genes_df + 0.01)}
+  if (z_score) {
+    z_scale = 'row'
+  } else {
+    z_scale='none'
+  } 
+  
   png(outFig)
   pheatmap(
     mat               = genes_df,
@@ -55,8 +61,9 @@ plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, gene_fn, outFig
     drop_levels       = TRUE,
     fontsize          = 14,
     main              = "",
-    cluster_cols=FALSE,
-    cluster_rows=T
+    cluster_cols=F,
+    cluster_rows=T,
+    scale = z_scale
   )
   dev.off()
 }
