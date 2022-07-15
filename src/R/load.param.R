@@ -31,3 +31,11 @@ outdir <- 'X:\\projects\\p041_PMS1\\Output'
 lfc_cutoff=1
 alpha=0.05
 topN=100
+
+
+## d4c parameters 
+domain = 'CD38'
+user = 'mavershang'
+pwd = 'TargetScience202206$'
+d4c_code_path = '/home/rstudio/Code/ESI_RNASeq/src/python/'
+d4c_out_dir = '/home/rstudio/p001_RNASeq/CD38/D4C/'

@@ -30,3 +30,9 @@ outdir <- '/home/rstudio/p001_RNASeq/CD38/DESeq2/'
 lfc_cutoff=0.58
 alpha=0.05
 
+## d4c parameters 
+domain = 'CD38'
+user = 'mavershang'
+pwd = 'TargetScience202206$'
+d4c_code_path = '/home/rstudio/Code/ESI_RNASeq/src/python/'
+d4c_out_dir = '/home/rstudio/p001_RNASeq/CD38/D4C/'

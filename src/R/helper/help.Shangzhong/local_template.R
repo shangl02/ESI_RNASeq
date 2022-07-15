@@ -7,6 +7,7 @@ source('src/R/util.DE.R')
 source('src/R/util.pathway.R')
 source('src/R/util.pheatmap.R')
 source('src/R/util.expression.boxplot.R')
+source('src/R/util.D4C.R')
 ## Load parameter◘
 source('src/R/helper/help.Shangzhong/local_param.R')
 
@@ -48,6 +49,14 @@ compare_df = read.table(comparison.file,header=T, sep="\t")
 ## DE analysis
 topN = 1e5
 DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species)
+
+## run D4C analysis
+dir.create(d4c_out_dir)
+run_d4c_for_raw_count(cts.mat, sample.meta, compare_df, domain, user, pwd)
+run_d4c_for_deseq2_results(compare_df, domain, user, pwd)
+
+
+
 
 #=============================================
 #        pheatmap for subset of genes
