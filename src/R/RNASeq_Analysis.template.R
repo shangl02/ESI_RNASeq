@@ -1,4 +1,5 @@
 source('src/R/util.load.cts.R')
+source('src/R/util.load.metadata.R')
 source('src/R/util.load.gtf.R')
 source('src/R/util.verify.R')
 source('src/R/util.design.R')
@@ -26,12 +27,9 @@ dim(cts.mat)
 #gtf.file <- 'X:\\projects\\Ensembl\\release-98\\gtf\\Mus_musculus.GRCm38.98.chr.gtf'
 #gene_anno = load.gtf(gtf.file)
 
-## Output directory
-dir.create(outdir)
-setwd(outdir)
 
 ## Load sample metadata
-sample.meta <- read.csv(sample.meta.file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+sample.meta <- load.meta(sample.meta.file)
 stopifnot("Sample" %in% colnames(sample.meta))
 sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, '.')
 dim(sample.meta)
@@ -52,21 +50,9 @@ if (!verify.meta(cts.mat, sample.meta)) {
 ## Read comparison file
 compare_df = read.table(comparison.file,header=T, sep="\t")
 
-# if (TRUE) {
-#   keywords=c("HO","HE","WT")
-#   for (key in keywords){
-#     ## modify this row accordingly
-#     idx=sample.meta$Treatment==key
-#     
-#     cts.sub=cts.mat[,idx]
-#     sample.meta.sub=sample.meta[idx,]
-#     outdir.sub=file.path(outdir,key)
-#     dir.create(outdir.sub)
-#     setwd(outdir.sub)
-#     process.sampleVariance.all(cts.sub, sample.meta.sub, variables)
-#     DE.DESeq(cts.sub, sample.meta.sub, compare_df, min_total_count, outdir.sub, lfc_cutoff, alpha, topN, species)
-#   }
-# }
+## Output directory
+dir.create(outdir)
+setwd(outdir)
 
 # Generate sample variance report
 process.sampleVariance.all(cts.mat, sample.meta, variables, min_count, min_total_count, labelCol)
