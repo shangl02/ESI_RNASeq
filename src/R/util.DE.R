@@ -10,7 +10,8 @@ suppressPackageStartupMessages({
   require(apeglm);
   require(gage);
   require(gageData);
-  require(EnhancedVolcano)
+  require(EnhancedVolcano);
+  require(biomaRt);
 })
 
 
@@ -48,7 +49,11 @@ DE.DESeq = function(cts.mat, sample.meta, compare_df, min_total_count, outdir, l
       
       l = addAnnoByVector(truncateEnsemblID(rownames(result)), species)
       result$symbol <- l$symbol
-      write.csv(result, file.path(path, paste0(comparison, '.result.csv')),quote=F)
+      # use biomaRt for gene ensemblID -> geneName (better but still large proportion not mapped)
+      #l=addAnnoByVector.v2(truncateEnsemblID(rownames(result)), species)
+      #result$symbol <- l$external_gene_name
+      
+      write.csv(result, file.path(path, paste0(comparison, '.result.csv')),quote=TRUE)
       
       # output cluster figure
       #pdf(paste(strsplit(outputFile,'\\,')[[1]][1],'.pdf',sep=""))
@@ -210,7 +215,9 @@ DE.fromStatTable = function(df_stat, startColIdx, stepSize, logOperation, cname,
     dir.create(path)
     setwd(path)
     
-    l = addAnnoByVector(truncateEnsemblID(rownames(result)), species)
+    #l = addAnnoByVector(truncateEnsemblID(rownames(result)), species)
+    l=addAnnoByVector.V2()
+    
     result$symbol <- l$symbol
     write.csv(result, file.path(path, paste0(title, '.result.csv')),quote=F)
     
@@ -336,7 +343,28 @@ addAnnoByVector = function(v, species) {
     r$name <- mapIds(get(dbID), keys = v, column= "GENENAME", keytype = "SYMBOL", multiVals = "first")
     r$ensembl <- mapIds(get(dbID), keys = v, column= "ENSEMBL", keytype = "SYMBOL", multiVals = "first")
   }
+  
+  # replace NA with ensemblID
+  for(i in 1:length(r$symbol)){
+    if (is.na(r$symbol[i]) | r$symbol[i]=='NA') {
+      r$symbol[i]=names(r$symbol)[i]
+    }
+  }
   return(r)
+}
+
+addAnnoByVector.v2 = function(v, species) {
+  data=loadEnsembeDataset(species)
+  mart<-useDataset(data, useMart('ensembl'))
+  ret<-getBM(filters='ensembl_gene_id', attributes=c('external_gene_name', 'entrezgene_id', 'description', 'ensembl_gene_id'), values=v, mart=mart)
+  df.x=as.list(v)
+  colnames(df.x)='ensemblID'
+  merge(df.x, ret, by.x)
+  
+  r=vector()
+  for (i in 1:length(v)) {
+     r[i] = ret[ret$ensembl_gene_id==v[i],3]
+  }
 }
 
 create.lfcGeneList = function(res) {
@@ -367,21 +395,38 @@ loadOrg.pathway = function(species) {
   return(dbID)
 }
 
-loadKEGG.pathway = function(species){
+loadEnsembeDataset = function(species) {
   if (tolower(species) == 'human'){
-    data(kegg.sets.hs)
-    data(sigmet.idx.hs)
-    return(kegg.sets.hs[sigmet.idx.hs])
-  }
+    dataname = 'hsapiens_gene_ensembl'
+  } 
   else if (tolower(species) == 'mouse') {
-    data(kegg.sets.mm)
-    data(sigmet.idx.mm)
-    return(kegg.sets.mm[sigmet.idx.mm])
+    dataname = 'mmusculus_gene_ensembl'         
+  }
+  else if (tolower(species) == "rat" | tolower(species) =='rno') {
+    dataname = 'rnorvegicus_gene_ensembl'
   }
   else {
     stop("unsupported species")
   }
+  
+  return(dataname)
 }
+
+# loadKEGG.pathway = function(species){
+#   if (tolower(species) == 'human'){
+#     data(kegg.sets.hs)
+#     data(sigmet.idx.hs)
+#     return(kegg.sets.hs[sigmet.idx.hs])
+#   }
+#   else if (tolower(species) == 'mouse') {
+#     data(kegg.sets.mm)
+#     data(sigmet.idx.mm)
+#     return(kegg.sets.mm[sigmet.idx.mm])
+#   }
+#   else {
+#     stop("unsupported species")
+#   }
+# }
 
 analysis.pathway = function(res, species, path, prefix) {
   # add annotation columns in res  
@@ -393,6 +438,6 @@ analysis.pathway = function(res, species, path, prefix) {
   gene_list = create.lfcGeneList(res)
   
   # pathway analysis
-  plot_pathway("KEGG", gene_list, species, dbID, path, prefix)
+  #plot_pathway("KEGG", gene_list, species, dbID, path, prefix)
   plot_pathway("GO", gene_list, species, dbID, path, prefix)
 }

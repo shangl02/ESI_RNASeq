@@ -8,11 +8,9 @@ suppressPackageStartupMessages({
 })
 
 plot_pathway = function(pathDB, gene_list, species, dbID, dir, prefix) {
-# <<<<<<< HEAD
-# =======
   gene_list = gene_list[unique(names(gene_list))] # get unique genes
   gene_list = sort(gene_list, decreasing=T)
-# >>>>>>> d1b78e645609d5cf86c595c2c4892b7016fec049
+  
   if (tolower(pathDB) == "kegg") {
     ## enrichment analysis
     print("Pathway analysis with KEGG")

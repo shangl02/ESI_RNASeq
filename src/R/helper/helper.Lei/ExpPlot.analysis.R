@@ -5,17 +5,20 @@ library(stringr)
 library(GOfuncR)
 library('fs')
 
-setwd('C:/Users/shangl02/source/repos/ESI_RNASeq/')
+# change it to your local branch dir
+setwd('C:/Users/shangl02/source/repos/ESI_RNASeq/') 
 source('src/R/util.load.cts.R')
+source('src/R/util.load.metadata.R')
 source('src/R/util.verify.R')
 source('src/R/util.sampleVariance.R')
 source('src/R/util.DE.R')
 source('src/R/util.pathway.R')
 
-param_file='X:\\projects\\p046_KDM5\\RNASeq.02012022\\analysis.REdiscoverTE\\param.R'
+param_file='X:/projects/p044_BMP9/RNASeq.02252022/Output/Round1_updatedAnnotation/mergedPool/reverseStrand.secondTranscript/DE/param.R'
+prefix='pos_neg_control'
 source(param_file)
-tpm.file=cts_file
-wd=outdir
+tpm.file=tpm_file
+outdir=expPlotOutDir
 
 
 ## Parameter setting
@@ -24,6 +27,11 @@ wd=outdir
 # sample.meta.file = "X:/projects/p036_LIRB1_2/Output/PreProcess/SampleMeta_37Samples.txt"
 # variables<-c('Treatment')  ## Variables in design
 # species="human"
+
+
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
 
 ## Function to perform beeswarm and boxplot of expression for genes under interest
 expBarplot<-function(tpm.mat, genes, species, sample.meta, outdir, prefix) {
@@ -69,9 +77,15 @@ expBarplot<-function(tpm.mat, genes, species, sample.meta, outdir, prefix) {
   print(g1)
   dev.off()
   
-  pdf(file.path(outdir, paste0(prefix, ".selectedGene.Expression.barplot.pdf")), width=plotWidth, height=plotHeight)
-  g2=ggplot(c, aes(x=mergeCond, y=TPM)) + 
-    geom_boxplot(aes(fill=mergeCond), position=position_dodge(0.9)) + 
+  pdf(file.path(outdir, paste0(prefix, ".selectedGene.Expression.boxplot.pdf")), width=plotWidth, height=plotHeight)
+  g2=ggplot(c, aes(x=mergeCond, y=TPM, fill=mergeCond)) + 
+    geom_boxplot(position=position_dodge(0.9)) + 
+    stat_summary(
+      aes(label = round(stat(y), 1)),
+      geom = "text", 
+      fun = function(y) { o <- boxplot.stats(y)$out; if(length(o) == 0) NA else o },
+      hjust = -1
+    ) +
     scale_fill_viridis_d() + 
     theme(legend.position="top", axis.text.x=element_text(angle=90,vjust=0.3,hjust=0.3)) + 
     facet_wrap(.~Gene, ncol=wNum,  scale='free')+
@@ -93,17 +107,18 @@ expBarplot<-function(tpm.mat, genes, species, sample.meta, outdir, prefix) {
 }
 
 
-
 ## Load TPM matrix
 tpm.mat = read.combined_cts(tpm.file)
 
 ## read sample metadata table
-sample.meta <- read.csv(sample.meta.file, sep='\t', header=TRUE, stringsAsFactors = FALSE)
+sample.meta <- load.meta(sample.meta.file)
 sample.meta$mergeCond = pasteMultiCol(sample.meta, variables, ':')
+
+stopifnot(verify.meta(tpm.mat, sample.meta))
 
 #################################################################
 ## Option #1 Read a input gene list and plot expression (TPM)
-selected.gene.file='X:/projects/p046_KDM5/RNASeq.02012022/metadata/GeneList.Guler2017.txt'
+selected.gene.file='X:/projects/p044_BMP9/RNASeq.02252022/metadata/Pos_N_Neg_affectedGenes.txt'
 #geneList<-read.csv(selected.gene.file, row.names=1)  ## Two column file
 #geneList<-geneList[[1]]
 

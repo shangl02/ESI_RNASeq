@@ -113,7 +113,8 @@ plot.glmpca = function(dds, v, labelCol='Sample') {
 #     ggtitle("MDS plot")
 # }
 
-plot.mds = function(dds, labelCol='Sample') {
+plot.mds = function(dds, varaibles, delim="_", labelCol='Sample') {
+  dds@colData$mergeCond<-pasteMultiCol(dds@colData, variables, delim)
   mds <- plotMDS(dds, pch="*", col=as.numeric(as.factor(dds@colData$mergeCond)), plot=F)
   names(mds)
   data.frame(x=mds$x, y=mds$y, dds@colData) %>%
@@ -167,7 +168,7 @@ process.sampleVariance.all = function(cts.mat, sample.meta, variables, min_count
     {
       print("Generating pdf")
       pdf(file='SampleVariance.all.pdf', width=20)
-      p1<-plot.mds(dds, labelCol)
+      p1<-plot.mds(dds, variables, '_', labelCol)
       p2<-plot.glmpca(dds, variables, labelCol)
       p3<-plot.countTransformation(dds, vsd, rld)
       
