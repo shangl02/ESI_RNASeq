@@ -8,6 +8,7 @@ source('src/R/util.pathway.R')
 source('src/R/util.pheatmap.R')
 source('src/R/util.expression.boxplot.R')
 source('src/R/util.D4C.R')
+source('src/R/util.load.metadata.R')
 ## Load parameter◘
 source('src/R/helper/help.Shangzhong/local_param.R')
 
@@ -61,14 +62,24 @@ run_d4c_for_deseq2_results(compare_df, domain, user, pwd)
 #=============================================
 #        pheatmap for subset of genes
 #=============================================
-gene_fn = '/media/EphB2/genes.txt'
-outFig = '/media/EphB2/pheatmap.png'
-norm_cts_fn = '/media/EphB2//DESeq2/norm_count_sub.tsv'
-sample_meta_fn = '/media/EphB2/condition_sub.tsv'
-variables = c('merge')
+gene_fn = '/home/rstudio/p001_RNASeq/CD38/genes_nad+.txt'
+outFig = '/home/rstudio/p001_RNASeq/CD38/genes_nad+.png'
+norm_cts_fn = '/home/rstudio/p001_RNASeq/CD38/DESeq2/norm_count.tsv'
+sample_meta_fn = '/home/rstudio/p001_RNASeq/CD38/20220617.CD38.Mouse.Lung.Metadata_sub.tsv'
+variables = c('Condition')
 logTrans = T
-plot.pheatmap(norm_cts_fn, sample.meta.file, variables, gene_fn, outFig, logTrans)
+z_score = F
+show_rownames = T
+species = 'mouse'
+plot_order = c('YoungWT:Saline', 'AgingWT:Saline', 'AgingWT:Bleomycin')
+# plot_order = c('Normoxia','IsotypeControl_3mg','Ab1076_0.3mg','Ab1076_3mg',
+#                'Ab732_0.3mg','Ab732_3mg','ActRIIA-Fc_2.1mg')
+plot.pheatmap(norm_cts_fn, sample_meta_fn, variables, species, gene_fn, outFig, 
+              logTrans, show_rownames, z_score, plot_order)
 
+deseq2_fn = '/home/rstudio/p001_RNASeq/CD38/DESeq2/AgingWT_Bleomycin_VS_AgingWT_Saline/AgingWT_Bleomycin_VS_AgingWT_Saline.result.csv'
+plot_pheatmap_group_mean(norm_cts_fn, sample_meta_fn, variables, species, gene_fn, deseq2_fn, 
+                                    outFig, logTrans,show_rownames, z_score, plot_order)
 #=============================================
 #        pathway analysis for genes
 #=============================================
