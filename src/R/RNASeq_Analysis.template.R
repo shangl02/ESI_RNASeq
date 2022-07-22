@@ -64,6 +64,12 @@ if (exists("DE_algo") && DE_algo=="limma") {
   DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species)
 }
 
+## run GSEA
+species = 'mouse'
+category = 'C2' # chose GSE pathway type
+deseq2_path = outdir
+GSEA_wrapper(compare_df, sample.meta, deseq2_path, species)
+
 ## run D4C analysis
 dir.create(d4c_out_dir)
 run_d4c_for_raw_count(cts.mat, sample.meta, compare_df, domain, user, pwd)

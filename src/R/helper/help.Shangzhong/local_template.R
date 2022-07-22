@@ -51,12 +51,17 @@ compare_df = read.table(comparison.file,header=T, sep="\t")
 topN = 1e5
 DE.DESeq(cts.mat, sample.meta, compare_df, min_total_count, outdir, lfc_cutoff, alpha, topN, species)
 
+## run GSEA
+species = 'mouse'
+category = 'C2' # chose GSE pathway type
+deseq2_path = outdir
+GSEA_wrapper(compare_df, sample.meta, deseq2_path, species)
+
+
 ## run D4C analysis
 dir.create(d4c_out_dir)
 run_d4c_for_raw_count(cts.mat, sample.meta, compare_df, domain, user, pwd)
 run_d4c_for_deseq2_results(compare_df, domain, user, pwd)
-
-
 
 
 #=============================================
@@ -72,8 +77,6 @@ z_score = F
 show_rownames = T
 species = 'mouse'
 plot_order = c('YoungWT:Saline', 'AgingWT:Saline', 'AgingWT:Bleomycin')
-# plot_order = c('Normoxia','IsotypeControl_3mg','Ab1076_0.3mg','Ab1076_3mg',
-#                'Ab732_0.3mg','Ab732_3mg','ActRIIA-Fc_2.1mg')
 plot.pheatmap(norm_cts_fn, sample_meta_fn, variables, species, gene_fn, outFig, 
               logTrans, show_rownames, z_score, plot_order)
 
