@@ -64,7 +64,11 @@ plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, species, gene_f
     z_scale='none'
   } 
   
-  png(outFig)
+  n_genes = nrow(genes_df)
+  n_groups = ncol(genes_df)
+  height = max(480 * n_genes / 15, 240)
+  width = max(480 * n_groups/ 3, 480)
+  png(outFig, width = n_groups * 20 + 100, height = n_genes * 20)
   pheatmap(
     mat               = genes_df,
     color             = colorRampPalette(c("navy", "white", "firebrick3"))(50),
@@ -157,7 +161,11 @@ plot_pheatmap_group_mean = function(norm_cts_fn, sample_meta_fn, variables, spec
   mat_colors <- list(group= colorRampPalette(brewer.pal(8, "Dark2"))(ncol(ave_df)))
   names(mat_colors$group) <- colnames(ave_df)
   
-  png(outFig)
+  n_genes = nrow(ave_df)
+  n_groups = ncol(ave_df)
+  height = max(480 * n_genes / 15, 240)
+  width = max(480 * n_groups/ 3, 480)
+  png(outFig, width = width, height = height)
   pheatmap(
     mat               = ave_df,
     color             = colorRampPalette(c("navy", "white", "firebrick3"))(50),
