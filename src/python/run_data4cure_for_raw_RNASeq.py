@@ -19,7 +19,7 @@ parser.add_argument('--domain',action='store',dest='domain',help='domain which i
 # d4c specific parameters
 parser.add_argument('--user',action='store',dest='user',help='user name for d4c')
 parser.add_argument('--pw',action='store',dest='pw',help='password for d4c')
-
+parser.add_argument('--token',action='store',dest='token_file',help='token file',default='none')
 
 args = parser.parse_args()
 expr_fn = args.in_file
@@ -32,7 +32,7 @@ domain = args.domain
 
 user = args.user
 pw = args.pw
-
+token_fn = args.token_file
 
 def log2_transform(df):
     df = np.log2(df + 1)
@@ -145,7 +145,12 @@ from d4client.ops_manager import makeOpsManager
 import d4client.d4capp as d4capp
 
 server_url = 'https://data4cure.pfizer.com'
-ap = AuthProvider(server_url, verify_ssl=False)
+if token_fn == 'none':
+    ap = AuthProvider(server_url, verify_ssl=False)    
+else:
+    with open(token_fn) as f:
+        t= f.readline().strip()
+    ap = AuthProvider(server_url, verify_ssl=False,authentication_token=t)
 ap.login(user, pw)
 token = ap.get_token({ 'user': True })
 
