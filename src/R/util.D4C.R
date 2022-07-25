@@ -28,6 +28,7 @@ run_d4c_for_raw_count = function(cts.mat, sample.meta, compare_df, domain, user,
       # 3rd part, run the d4c api
       code = file.path(d4c_code_path,'run_data4cure_for_raw_RNASeq.py')
       cmd = glue("python3 '{code}' -i '{sub_count_fn}' -m '{sub_meta_fn}' -c '{sub_compare_fn}' -v mergeCond -d count --domain '{domain}' --user '{user}' --pw '{pwd}'")
+      cmd = gsub('\\\\','/',cmd)
       system(cmd)
     },
     error = function(err) {
@@ -63,6 +64,7 @@ run_d4c_for_deseq2_results = function(compare_df, domain, user, pwd){
       code = file.path(d4c_code_path,'run_data4cure_for_DESeq2_results.py')
       deseq2_tbl = glue('{path}/{comparison}.result.tbl')
       cmd = glue("python3 '{code}' -i '{cp_deseq2_fn}' -o '{deseq2_tbl}' --domain '{domain}' --user {user} --pw {pwd}")
+      cmd = gsub('\\\\','/',cmd)
       system(cmd)
       
     },
