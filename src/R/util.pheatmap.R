@@ -65,10 +65,8 @@ plot.pheatmap = function(norm_cts_fn, sample_meta_fn, variables, species, gene_f
   } 
   
   n_genes = nrow(genes_df)
-  n_groups = ncol(genes_df)
-  height = max(480 * n_genes / 15, 240)
-  width = max(480 * n_groups/ 3, 480)
-  png(outFig, width = n_groups * 20 + 100, height = n_genes * 20)
+  n_samples = ncol(genes_df)
+  png(outFig, width = n_samples * 20 + 100, height = max(n_genes, 12) * 20)
   pheatmap(
     mat               = genes_df,
     color             = colorRampPalette(c("navy", "white", "firebrick3"))(50),
